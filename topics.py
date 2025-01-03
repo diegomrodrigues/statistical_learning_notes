@@ -1,6 +1,6 @@
 import os
-import google.generativeai as genai
 import time
+import google.generativeai as genai
 
 # Constants
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -56,15 +56,22 @@ def process_pdf(chat, pdf_path):
     uploaded_file = upload_to_gemini(pdf_path)
     wait_for_file_active(uploaded_file)
     
-    # Send PDF to chat and generate topics
-    chat.send_message({"role": "user", "parts": [uploaded_file]})
-    response = chat.send_message("Analyze the PDF and generate topics.")
-    
-    # Save output in the same directory as the PDF
-    output_file = os.path.join(os.path.dirname(pdf_path), "topics.md")
-    with open(output_file, "w", encoding='utf-8') as f:
-        f.write(response.text)
-    print(f"✓ Topics saved to: {output_file}")
+    try:
+        # Send the file to the chat session
+        response = chat.send_message({
+            "role": "user",
+            "parts": [uploaded_file],
+        })
+                
+        # Save output in the same directory as the PDF
+        output_file = os.path.join(os.path.dirname(pdf_path), "topics.md")
+        with open(output_file, "w", encoding='utf-8') as f:
+            f.write(response.text)
+        print(f"✓ Topics saved to: {output_file}")
+        
+    except Exception as e:
+        print(f"Error processing file: {str(e)}")
+        raise
 
 def get_pdf_files():
     pdf_files = []
