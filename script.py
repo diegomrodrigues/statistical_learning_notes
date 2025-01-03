@@ -2,6 +2,7 @@ import os
 import time
 import json
 import google.generativeai as genai
+from google.generativeai.types import HarmCategory, HarmBlockThreshold
 
 # Constants
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -19,6 +20,15 @@ GENERATION_CONFIG = {
     "top_k": 40,
     "max_output_tokens": 8192,
     "response_mime_type": "text/plain",
+}
+
+# Safety settings
+SAFETY_SETTINGS = {
+    HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_NONE,
+    HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_NONE,
+    HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT: HarmBlockThreshold.BLOCK_NONE,
+    HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: HarmBlockThreshold.BLOCK_NONE,
+    HarmCategory.HARM_CATEGORY_UNSPECIFIED: HarmBlockThreshold.BLOCK_NONE,
 }
 
 def init_gemini():
@@ -61,6 +71,7 @@ def create_model(prompt_file):
         model = genai.GenerativeModel(
             model_name="gemini-2.0-flash-exp",
             generation_config=GENERATION_CONFIG,
+            safety_settings=SAFETY_SETTINGS,
             system_instruction="\n".join(system_prompt.readlines()),
         )
     print("✓ Model created successfully")
@@ -142,6 +153,7 @@ def get_topics_dict(topics_content):
     topics_model = genai.GenerativeModel(
         model_name="gemini-2.0-flash-exp",
         generation_config=json_config,
+        safety_settings=SAFETY_SETTINGS,
         system_instruction="""given the topics, return it in a json format with the following template:
         {
         "topic_name": [ "topic 1", "topic 2", ... ],
@@ -168,6 +180,7 @@ def create_diagram_model():
     return genai.GenerativeModel(
         model_name="gemini-2.0-flash-exp",
         generation_config=diagram_config,
+        safety_settings=SAFETY_SETTINGS,
         system_instruction="""You are a technical documentation expert specializing in Mermaid diagrams. Your task is to:
 
 1. Analyze the given text
@@ -227,6 +240,7 @@ def create_filename_model():
     return genai.GenerativeModel(
         model_name="gemini-1.5-flash",
         generation_config=filename_config,
+        safety_settings=SAFETY_SETTINGS,
         system_instruction="""Generate a concise, descriptive filename for the given topic. Requirements:
 - Maximum 50 characters
 - Use only letters, numbers, and spaces
@@ -272,6 +286,7 @@ def create_math_format_model():
     return genai.GenerativeModel(
         model_name="gemini-2.0-flash-exp",
         generation_config=math_config,
+        safety_settings=SAFETY_SETTINGS,
         system_instruction="""Format all mathematical expressions using LaTeX notation within $ or $$ delimiters. 
         
 Examples of replacements:
@@ -317,6 +332,7 @@ def create_cleanup_model():
     return genai.GenerativeModel(
         model_name="gemini-2.0-flash-exp",
         generation_config=cleanup_config,
+        safety_settings=SAFETY_SETTINGS,
         system_instruction="""Remove any prompt artifacts or instructions that were accidentally included in the generated text while preserving all actual content. 
 
 Examples of text to remove:
@@ -380,6 +396,7 @@ def create_numerical_examples_model():
     return genai.GenerativeModel(
         model_name="gemini-2.0-flash-exp",
         generation_config=examples_config,
+        safety_settings=SAFETY_SETTINGS,
         system_instruction="""Add practical numerical examples to theoretical sections while preserving all existing content. 
 
 Guidelines for adding examples:
@@ -387,50 +404,56 @@ Guidelines for adding examples:
 2. Add examples after theoretical explanations using this format:
 
 > 💡 **Exemplo Numérico:**
-[Example content with actual numbers and calculations]
+[Example content with actual numbers, calculations, and visualizations]
 
-Example types to add:
-- Numerical calculations of theoretical formulas
-- Step-by-step applications of mathematical concepts
-- Python code snippets using numpy/scipy for complex calculations
-- Market-based scenarios with real-world parameters
-- Comparative analyses with different parameter values
+Example types to add based on linear regression topics:
+- Bias-variance tradeoff calculations with specific datasets
+- Ridge and Lasso regularization with different λ values
+- Matrix calculations for least squares estimation
+- Orthogonalization examples using Gram-Schmidt
+- Principal Component Analysis (PCA) with actual data
+- Cross-validation error calculations
+- Parameter estimation and confidence intervals
+- F-statistics and hypothesis testing examples
+- Subset selection comparisons with real predictors
+- Path algorithms with concrete coefficient values
 
-Requirements:
-1. Preserve all existing content (text, math, diagrams, references)
-2. Add examples only where they enhance understanding
-3. Use realistic market parameters when applicable
-4. Include Python code only when it adds value
-5. Format all mathematical expressions using $ and $$
-6. Keep references to context [^n] intact
-7. Maintain academic tone while making concepts more tangible
-8. Add examples after theoretical sections, not in the middle
-9. Use emoji 💡 to clearly mark example sections
-10. Ensure examples are consistent with the theoretical framework
-11. Use tables and other markdown elements to ehance the explanation
-
-Example format:
-
-> 💡 **Exemplo Numérico: Cálculo de Volatilidade Implícita**
-Considere uma opção de compra com os seguintes parâmetros:
-- Preço do ativo (S): $100
-- Preço de exercício (K): $95
-- Taxa livre de risco (r): 5% a.a.
-- Tempo até vencimento (T): 0.5 anos
-- Preço de mercado (C): $8.50
-
-Usando a fórmula de Black-Scholes:
+Required components:
+1. Use Python code with numpy/scipy/sklearn/pytorch when appropriate:
 ```python
 import numpy as np
-from scipy.stats import norm
-
-def black_scholes(S, K, T, r, sigma):
-    d1 = (np.log(S/K) + (r + sigma**2/2)*T) / (sigma*np.sqrt(T))
-    d2 = d1 - sigma*np.sqrt(T)
-    return S*norm.cdf(d1) - K*np.exp(-r*T)*norm.cdf(d2)
+from sklearn.linear_model import LinearRegression
+# Example code
 ```
 
-A volatilidade implícita que resulta em C = $8.50 é σ = 25.3%.""")
+2. Include visualizations using Mermaid when helpful:
+```mermaid
+# Diagram showing relationships
+```
+
+3. Show mathematical calculations step by step:
+$\text{Step 1: } \beta = (X^TX)^{-1}X^Ty$
+$\text{Step 2: } ...$
+
+4. Use tables for comparing methods:
+| Method | MSE | R² | Parameters |
+|--------|-----|----| ---------- |
+| OLS    | ... | ...| ...        |
+| Ridge  | ... | ...| ...        |
+
+5. Include real-world interpretations of results
+
+Requirements:
+1. Preserve all existing content
+2. Format all mathematical expressions using LaTeX
+3. Use realistic parameter values
+4. Show intermediate calculation steps
+5. Explain the intuition behind the numbers
+6. Connect examples to theoretical concepts
+7. Include residual analysis where appropriate
+8. Compare different methods when relevant
+9. Use clear variable naming conventions
+10. Add error analysis and statistical tests""")
 
 def add_numerical_examples(examples_model, content):
     """Process content to add numerical examples where appropriate."""
