@@ -1,45 +1,5 @@
-*   **Key Themes**
-
-    *   **Bias-Variance Tradeoff:** The core concept underlying many methods.
-    *   **Regularization:**  Various techniques (L1, L2, and others) to constrain model complexity and reduce overfitting.
-    *   **Sparsity:**  Techniques for selecting a small number of important variables.
-    *   **Path Algorithms:**  Efficient ways to trace solutions as a regularization parameter changes.
-    *   **Orthogonalization:** Gram-Schmidt, QR, SVD, and their use in simplifying linear models.
-    *   **Geometric Interpretations:**  Visualizing linear regression as projections in input and feature spaces.
-    *   **Connection Between Statistical & Algorithmic Concepts:** The strong relationship between statistical theory (e.g., Gaussian error assumptions) and how estimation and prediction procedures are formulated.
-    *   **Model Selection:** How to choose between competing models and the role of metrics and cross-validation.
-
-*   **Linear Regression Models and Least Squares:**
-    *   Definition of the linear regression model:  f(x) = β₀ + ΣXⱼβⱼ and its relation to E(Y|X).
-    *   Sources of input variables: quantitative, transformations (log, sqrt), basis expansions, dummy coding for qualitative inputs, interactions.
-    *   Least Squares Estimation: Minimizing the Residual Sum of Squares (RSS)
-    *   Mathematical formulation: RSS(β) =  ||y - Xβ||² 
-    *   Matrix notation: RSS(β) = (y - Xβ)ᵀ(y - Xβ).
-        *  Derivative with respect to β: -2Xᵀ(y - Xβ)
-        *  Second derivative with respect to β: 2XᵀX
-    *   Solution: β = (XᵀX)⁻¹Xᵀy.
-    *   Geometrical interpretation: Orthogonal projection of y onto the column space of X; hat matrix (H = X(XᵀX)⁻¹Xᵀ) as projection matrix.
-    *   Rank deficiency: non-uniqueness of β, handling redundancies through recoding/dropping columns, situations with p>N, and regularization.
-    *   Variance-covariance of parameter estimates: Var(β) = (XᵀX)⁻¹σ².
-    *   Estimation of error variance: σ² = 1/(N-p-1) Σ(yᵢ-ŷᵢ)².
-    *   Statistical assumptions: conditional expectation of Y is linear in X, additive Gaussian error (ε ~ N(0, σ²)).
-    *   Distribution of parameter estimates: β ~ N(β, (XᵀX)⁻¹σ²).
-    *   Distribution of the error variance: (N-p-1)σ²/σ² ~ χ²ₙ₋ₚ₋₁.
-    *   Hypothesis testing:
-        *   Standardized coefficient (Z-score): Zⱼ = βⱼ/ôⱼ
-        *   F-statistic: F = (RSS₀ - RSS₁) / (p₁ - p₀) / (RSS₁ / (N - p₁ - 1)).
-    *   Confidence intervals:  βᵢ ± z(1-α) √vⱼ, and confidence sets.
-    *   Example: Prostate Cancer Data
-        *   Exploration of predictor correlations, fitting the model to real data with Z-scores and testing significance.
-
-*   **The Gauss-Markov Theorem:**
-    *   Least squares optimality within linear unbiased estimators.
-    *   Mean Squared Error (MSE) decomposition: Var(θ) + [E(θ)- θ]².
-    *   Unbiased vs. biased estimators: trading bias for reduced variance.
 
 *  **Multiple Regression from Simple Univariate Regression**
-    * Univariate case without intercept:  Y = Xβ + ε.
-     * Least squares estimate and residuals.
      * Inner product notation and relationship to multiple regression.
      * Orthogonal predictors and their effect on parameter estimates
      * Orthogonalization procedures: adjustment for x0, steps for simple regression and multiple regression interpretations.
