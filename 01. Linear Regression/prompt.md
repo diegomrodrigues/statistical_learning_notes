@@ -321,8 +321,6 @@ Após gerar as primeiras 3 a 4 seções, adicione as referências utilizadas no 
 
 - Use $ para expressões matemáticas em linha e $$ para equações centralizadas.
 
-- **Não introduza informações externas ao contexto fornecido. Todo o conteúdo deve ser derivado do contexto disponível.**
-
 - Exemplos técnicos devem ser apenas em Python e avançados, **preferencialmente utilizando bibliotecas como numpy ou similares, conforme indicado no contexto.**
 
 - Não traduza nomes técnicos e teóricos.
