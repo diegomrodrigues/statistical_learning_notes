@@ -1,14 +1,10 @@
 *   **Key Themes**
 
-    *   **Bias-Variance Tradeoff:** The core concept underlying many methods.
-    *   **Regularization:**  Various techniques (L1, L2, and others) to constrain model complexity and reduce overfitting.
-    *   **Sparsity:**  Techniques for selecting a small number of important variables.
-    *   **Path Algorithms:**  Efficient ways to trace solutions as a regularization parameter changes.
     *   **Orthogonalization:** Gram-Schmidt, QR, SVD, and their use in simplifying linear models.
     *   **Geometric Interpretations:**  Visualizing linear regression as projections in input and feature spaces.
     *   **Connection Between Statistical & Algorithmic Concepts:** The strong relationship between statistical theory (e.g., Gaussian error assumptions) and how estimation and prediction procedures are formulated.
     *   **Model Selection:** How to choose between competing models and the role of metrics and cross-validation.
-
+    
 *   **Linear Regression Models and Least Squares:**
     *   Definition of the linear regression model:  f(x) = β₀ + ΣXⱼβⱼ and its relation to E(Y|X).
     *   Sources of input variables: quantitative, transformations (log, sqrt), basis expansions, dummy coding for qualitative inputs, interactions.
