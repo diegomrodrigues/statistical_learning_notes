@@ -18,20 +18,22 @@ GENERATION_CONFIG = {
 def init_gemini():
     genai.configure(api_key=GEMINI_API_KEY)
 
-def upload_to_gemini(path):
+def upload_to_gemini(path, mime_type=None):
+    """Uploads the given file to Gemini."""
     print(f"Uploading: {path}")
-    return genai.upload_file(path, mime_type="application/pdf")
+    return genai.upload_file(path, mime_type=mime_type)
 
 def wait_for_file_active(file):
+    """Waits for the given file to be active."""
     print("Waiting for file processing...", end="", flush=True)
     while True:
         file = genai.get_file(file.name)
         if file.state.name == "ACTIVE":
             break
         elif file.state.name != "PROCESSING":
-            raise Exception(f"File {file.name} failed to process")
+            raise Exception(f"File {file.name} failed to process: {file.state.name}")
         print(".", end="", flush=True)
-        time.sleep(5)
+        time.sleep(10)
     print("\nFile ready")
 
 def create_chat_session(prompt_file):
@@ -53,16 +55,19 @@ def process_pdf(chat, pdf_path):
     print(f"\nProcessing PDF: {os.path.basename(pdf_path)}")
     
     # Upload and wait for file
-    uploaded_file = upload_to_gemini(pdf_path)
+    uploaded_file = upload_to_gemini(pdf_path, mime_type="application/pdf")
     wait_for_file_active(uploaded_file)
     
     try:
-        # Send the file to the chat session
-        response = chat.send_message({
+        # First, add file to history
+        chat.history.append({
             "role": "user",
-            "parts": [uploaded_file],
+            "parts": [uploaded_file]
         })
-                
+        
+        # Then send the analysis request
+        response = chat.send_message("Please analyze this document and extract the main topics.")
+    
         # Save output in the same directory as the PDF
         output_file = os.path.join(os.path.dirname(pdf_path), "topics.md")
         with open(output_file, "w", encoding='utf-8') as f:
