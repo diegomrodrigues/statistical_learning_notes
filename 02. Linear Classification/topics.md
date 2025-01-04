@@ -1,9 +1,3 @@
-*   **4.1 Introduction:**
-    *   Classification problem: Discrete output (G) from input features (X).
-    *   Linear Methods:  Decision boundaries between classes are linear (hyperplanes).
-    *   Methods: Linear Regression on indicator variables, Discriminant functions, Probability models.
-    *   Monotone Transformations: Linear decision boundaries can be achieved via linear transformations of posterior probabilities.
-    *  Quadratic Boundaries: Linear boundaries in augmented feature space leading to quadratic boundaries in original space.
 
 *   **4.2 Linear Regression of an Indicator Matrix:**
     *   Indicator Coding: Representing classes by indicator vectors for regression.
