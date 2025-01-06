@@ -1,12 +1,8 @@
 import os
-import time
 import json
 import google.generativeai as genai
 from google.generativeai.types import HarmCategory, HarmBlockThreshold
 from functools import wraps
-import traceback
-from datetime import datetime
-import re
 
 # Import missing functions
 from script import (
@@ -58,7 +54,7 @@ def create_intersection_model():
         system_instruction="""Analyze two lists of topics and find meaningful intersections between them.
 
 Your task is to:
-1. Identify topics that are semantically similar or related
+1. Identify topics that are semantically similar or related in its theory
 2. Create a new list of intersection topics that captures shared concepts
 3. Return the result as a JSON object with proper topic organization
 
@@ -100,9 +96,12 @@ Remember:
 
 def extract_topics_from_pdf(model, pdf_file):
     """Extract topics from a PDF file using the topics prompt."""
+    print(f"📄 Extracting topics from {os.path.basename(pdf_file)}...")
+    
     # Upload PDF and create chat session
     pdf = upload_to_gemini(pdf_file, mime_type="application/pdf")
     wait_for_files_active([pdf])
+    print("✓ PDF uploaded successfully")
     
     # Read topics prompt
     with open(PROMPT_FILE, 'r') as f:
@@ -112,10 +111,14 @@ def extract_topics_from_pdf(model, pdf_file):
     response = chat.send_message(topics_prompt)
     
     # Convert response to topics dictionary
-    return get_topics_dict(response.text)
+    topics_dict = get_topics_dict(response.text)
+    print(f"✓ Extracted {len(topics_dict)} topics")
+    return topics_dict
 
 def find_topic_intersections(intersection_model, topics1, topics2):
     """Find intersections between two sets of topics."""
+    print(f"🔄 Finding intersections between {len(topics1)} and {len(topics2)} topics...")
+    
     chat = intersection_model.start_chat()
     response = chat.send_message(f"""Find meaningful intersections between these two topic lists:
 
@@ -127,7 +130,9 @@ List 2:
 
 Return only the JSON object with intersection topics.""")
     
-    return json.loads(response.text)
+    intersection_topics = json.loads(response.text)
+    print(f"✓ Found {len(intersection_topics)} intersection topics")
+    return intersection_topics
 
 def find_best_subtopic_folder(model, topic, section_dir):
     """Find the most appropriate subtopic folder based on content analysis."""
@@ -145,12 +150,16 @@ Return only the folder name that best matches the topic content.""")
 
 def main():
     """Main execution flow."""
+    print("\n🚀 Starting intersection analysis...\n")
+    
     # Initialize Gemini
     init_gemini()
+    print("✓ Gemini API initialized")
     
     # Create specialized models
     intersection_model = create_intersection_model()
     base_model = create_model(PROMPT_FILE)
+    print("✓ Models created successfully")
     
     # Get all valid input directories
     input_directories = get_input_directories(BASE_DIR)
@@ -160,18 +169,17 @@ def main():
         return
     
     for input_dir in input_directories:
-        print(f"\nProcessing directory: {input_dir}")
+        print(f"\n📁 Processing directory: {input_dir}")
         
-        # Get PDF files for current directory
         pdf_files = get_pdf_files_in_dir(input_dir)
+        print(f"Found {len(pdf_files)} PDF files")
         
         if not pdf_files:
-            print("No PDF files found in the directory, skipping...")
+            print("⚠️ No PDF files found in the directory, skipping...")
             continue
         
-        # Process each PDF
         for pdf_file in pdf_files:
-            print(f"\nProcessing PDF: {pdf_file}")
+            print(f"\n📎 Processing PDF: {os.path.basename(pdf_file)}")
             
             # Extract topics from PDF
             pdf_topics = extract_topics_from_pdf(base_model, pdf_file)
@@ -193,8 +201,9 @@ def main():
             intersection_topics = find_topic_intersections(
                 intersection_model, pdf_topics, existing_topics)
             
-            # Process intersection topics
+            print(f"\n🔍 Processing {len(intersection_topics)} intersection topics...")
             for section_name, topics in intersection_topics.items():
+                print(f"\n📑 Processing section: {section_name}")
                 section_dir = create_section_directory(input_dir, section_name)
                 
                 # Create chat session for content generation
@@ -204,6 +213,9 @@ def main():
                 
                 # Process each topic
                 process_topic_section(chat_session, topics, section_name, section_dir)
+                print(f"✓ Completed processing {len(topics)} topics in section")
+    
+    print("\n✨ Intersection analysis completed successfully!")
 
 if __name__ == "__main__":
     main() 

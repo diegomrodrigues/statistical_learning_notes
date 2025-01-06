@@ -1,62 +1,168 @@
 from crewai import Agent, Crew, Process, Task
 from crewai.project import CrewBase, agent, crew, task
-
-# If you want to run a snippet of code before or after the crew starts, 
-# you can use the @before_kickoff and @after_kickoff decorators
-# https://docs.crewai.com/concepts/crews#example-crew-class-with-decorators
+from crewai_tools import DirectoryReadTool, FileReadTool, FileWriterTool
 
 @CrewBase
 class StudyAgent():
-	"""StudyAgent crew"""
+	"""StudyAgent crew for processing and generating educational content"""
 
-	# Learn more about YAML configuration files here:
-	# Agents: https://docs.crewai.com/concepts/agents#yaml-configuration-recommended
-	# Tasks: https://docs.crewai.com/concepts/tasks#yaml-configuration-recommended
 	agents_config = 'config/agents.yaml'
 	tasks_config = 'config/tasks.yaml'
 
-	# If you would like to add tools to your agents, you can learn more about it here:
-	# https://docs.crewai.com/concepts/agents#agent-tools
 	@agent
-	def researcher(self) -> Agent:
+	def document_analyzer(self) -> Agent:
+		"""Creates an analyzer agent to process input documents"""
 		return Agent(
-			config=self.agents_config['researcher'],
-			verbose=True
+			config=self.agents_config['document_analyzer'],
+			tools=[
+				DirectoryReadTool(),
+				FileReadTool(),
+			],
+			verbose=True,
+			allow_delegation=True,
+			memory=True
 		)
 
 	@agent
-	def reporting_analyst(self) -> Agent:
+	def math_formatter(self) -> Agent:
+		"""Creates a formatter agent to handle mathematical notation"""
 		return Agent(
-			config=self.agents_config['reporting_analyst'],
-			verbose=True
+			config=self.agents_config['math_formatter'],
+			tools=[],
+			verbose=True,
+			allow_delegation=True,
+			memory=False
 		)
 
-	# To learn more about structured task outputs, 
-	# task dependencies, and task callbacks, check out the documentation:
-	# https://docs.crewai.com/concepts/tasks#overview-of-a-task
-	@task
-	def research_task(self) -> Task:
-		return Task(
-			config=self.tasks_config['research_task'],
+	@agent
+	def diagram_creator(self) -> Agent:
+		"""Creates a diagram agent to generate Mermaid visualizations"""
+		return Agent(
+			config=self.agents_config['diagram_creator'],
+			tools=[],
+			verbose=True,
+			allow_delegation=True,
+			memory=False
+		)
+
+	@agent
+	def examples_generator(self) -> Agent:
+		"""Creates an examples agent to add numerical examples"""
+		return Agent(
+			config=self.agents_config['examples_generator'],
+			tools=[],
+			verbose=True,
+			allow_delegation=True,
+			memory=False
+		)
+
+	@agent
+	def content_writer(self) -> Agent:
+		"""Creates a writer agent to generate final content"""
+		return Agent(
+			config=self.agents_config['content_writer'],
+			tools=[],
+			verbose=True,
+			allow_delegation=True,
+			memory=False
+		)
+
+	@agent
+	def cleanup_agent(self) -> Agent:
+		"""Creates a cleanup agent to remove prompt artifacts"""
+		return Agent(
+			config=self.agents_config['cleanup_agent'],
+			tools=[],
+			verbose=True,
+			allow_delegation=True,
+			memory=False,
+			llm_config={
+				"temperature": 0.3,
+				"top_p": 0.95,
+				"top_k": 40,
+				"max_output_tokens": 8192,
+			}
 		)
 
 	@task
-	def reporting_task(self) -> Task:
+	def analyze_documents_task(self) -> Task:
+		"""Analyzes input documents and extracts key concepts"""
 		return Task(
-			config=self.tasks_config['reporting_task'],
-			output_file='report.md'
+			config=self.tasks_config['analyze_documents_task'],
+			context=[
+				"You must read and analyze the following PDF files: {pdf_files}",
+				"For each PDF file:",
+				"1. Use FileReadTool to read the content",
+				"Use this system prompt to guide your analysis: {system_prompt}"
+			],
+			tools=[
+				FileReadTool()
+			]
+		)
+
+	@task
+	def cleanup_task(self) -> Task:
+		"""Cleans up prompt artifacts from generated content"""
+		return Task(
+			config=self.tasks_config['cleanup_task'],
+			context=[self.analyze_documents_task()]
+		)
+
+	@task
+	def generate_examples_task(self) -> Task:
+		"""Adds numerical examples to content"""
+		return Task(
+			config=self.tasks_config['generate_examples_task'],
+			context=[self.cleanup_task()]  # Depends on cleaned content
+		)
+
+	@task
+	def create_diagrams_task(self) -> Task:
+		"""Creates Mermaid diagrams for visualization"""
+		return Task(
+			config=self.tasks_config['create_diagrams_task'],
+			context=[self.generate_examples_task()]  # Depends on content with examples
+		)
+
+	@task
+	def format_math_task(self) -> Task:
+		"""Formats mathematical content using LaTeX notation"""
+		return Task(
+			config=self.tasks_config['format_math_task'],
+			context=[self.create_diagrams_task()]  # Depends on content with diagrams
+		)
+
+	@task
+	def write_content_task(self) -> Task:
+		"""Generates final content with all components"""
+		return Task(
+			config=self.tasks_config['write_content_task'],
+			context=[self.format_math_task()],
+			tools=[FileWriterTool()],
+			output_file='{section_dir}/{topic_number:02d}. {topic_name}.md'
 		)
 
 	@crew
-	def crew(self) -> Crew:
-		"""Creates the StudyAgent crew"""
-		# To learn how to add knowledge sources to your crew, check out the documentation:
-		# https://docs.crewai.com/concepts/knowledge#what-is-knowledge
-
+	def crew(self, llm=None) -> Crew:
+		"""Creates the StudyAgent crew with sequential processing"""
 		return Crew(
-			agents=self.agents, # Automatically created by the @agent decorator
-			tasks=self.tasks, # Automatically created by the @task decorator
+			agents=[
+				self.document_analyzer(),
+				self.cleanup_agent(),
+				self.examples_generator(),
+				self.diagram_creator(),
+				self.math_formatter(),
+				self.content_writer()
+			],
+			tasks=[
+				self.analyze_documents_task(),
+				self.cleanup_task(),
+				self.generate_examples_task(),
+				self.create_diagrams_task(), 
+				self.format_math_task(),
+				self.write_content_task()
+			],
 			process=Process.sequential,
 			verbose=True,
-			# process=Process.hierarchical, # In case you wanna use that instead https://docs.crewai.com/how-to/Hierarchical/
+			llm=llm
 		)
