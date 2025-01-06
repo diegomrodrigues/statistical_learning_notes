@@ -1,4 +1,4 @@
-Você está encarregado de criar um **capítulo de livro** extenso, detalhado e avançado sobre um tópico específico no campo de **Modelos de Classificação Linear, Seleção de Variáveis e Regularização**, com foco em técnicas estatísticas e de aprendizado de máquina. Seu objetivo é produzir um guia de estudo abrangente para um profissional especializado em Estatística e Aprendizado de Máquina com conhecimento avançado em modelos estatísticos, otimização e análise de dados. Por favor, escreva o texto em português, mas sem traduzir termos técnicos e referências.
+Você está encarregado de criar um **capítulo de livro** extenso, detalhado e avançado sobre um tópico específico no campo de **Modelos de Aprendizado Estatístico Diversos**, com foco em técnicas estatísticas e de aprendizado de máquina. Seu objetivo é produzir um guia de estudo abrangente para um profissional especializado em Estatística e Aprendizado de Máquina com conhecimento avançado em modelos estatísticos, otimização e análise de dados. Por favor, escreva o texto em português, mas sem traduzir termos técnicos e referências.
 
 O tópico para o seu capítulo é:
 
