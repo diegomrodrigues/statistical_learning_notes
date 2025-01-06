@@ -3,6 +3,10 @@ import time
 import json
 import google.generativeai as genai
 from google.generativeai.types import HarmCategory, HarmBlockThreshold
+from functools import wraps
+import traceback
+from datetime import datetime
+import re
 
 # Constants
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -30,6 +34,34 @@ SAFETY_SETTINGS = {
     HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: HarmBlockThreshold.BLOCK_NONE,
     HarmCategory.HARM_CATEGORY_UNSPECIFIED: HarmBlockThreshold.BLOCK_NONE,
 }
+
+def retry_on_error(max_retries=3):
+    """Decorator to retry a function on error with logging."""
+    def decorator(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            for attempt in range(max_retries):
+                try:
+                    return func(*args, **kwargs)
+                except Exception as e:
+                    if attempt == max_retries - 1:  # Last attempt failed
+                        # Log the error
+                        error_msg = f"""
+Time: {datetime.now()}
+Function: {func.__name__}
+Error: {str(e)}
+Stack Trace:
+{traceback.format_exc()}
+----------------------------------------
+"""
+                        with open(os.path.join(BASE_DIR, "errors.txt"), "a", encoding='utf-8') as f:
+                            f.write(error_msg)
+                        print(f"❌ Failed after {max_retries} attempts: {func.__name__}")
+                        raise
+                    print(f"⚠️ Attempt {attempt + 1}/{max_retries} failed, retrying...")
+                    time.sleep(2 ** attempt)  # Exponential backoff
+        return wrapper
+    return decorator
 
 def init_gemini():
     """Initialize Gemini API with environment credentials."""
@@ -248,30 +280,46 @@ def get_next_subtopic_number(topic_dir):
     return max_num + 1
 
 def create_section_directory(base_dir, section_name):
-    """Create and return the path to a section directory, handling numbering."""
-    # Check if a directory with this name (ignoring number) already exists
-    existing_dir = None
-    section_name_without_number = ' '.join(section_name.split(' ')[1:])
+    """Create a section directory with proper sequential numbering."""
+    # Remove any existing number prefixes from the input section name
+    section_name = re.sub(r'^\d+\.\s*', '', section_name)
+    clean_section_name = section_name.lower().strip()
     
-    for item in os.listdir(base_dir):
-        dir_path = os.path.join(base_dir, item)
-        if os.path.isdir(dir_path):
-            current_name_without_number = ' '.join(item.split(' ')[1:])
-            if current_name_without_number == section_name_without_number:
-                existing_dir = dir_path
-                break
+    # Get existing section directories
+    existing_dirs = [d for d in os.listdir(base_dir) 
+                    if os.path.isdir(os.path.join(base_dir, d))]
     
-    if existing_dir:
-        # If directory exists, return it for subtopic creation
-        return existing_dir
-    else:
-        # Create new directory with next available number
-        next_num = get_next_topic_number(base_dir)
-        new_section_name = f"{next_num:02d}. {section_name_without_number}"
-        section_dir = os.path.join(base_dir, new_section_name)
-        os.makedirs(section_dir, exist_ok=True)
-        return section_dir
+    # First check for existing similar sections
+    for existing_dir in existing_dirs:
+        # Remove the number prefix and clean up for comparison
+        existing_name = re.sub(r'^\d+\.\s*', '', existing_dir).lower().strip()
+        if existing_name == clean_section_name:
+            print(f"✓ Using existing section: {existing_dir}")
+            return os.path.join(base_dir, existing_dir)
+    
+    # If no existing section found, create new one with next available number
+    existing_numbers = set()
+    for dir_name in existing_dirs:
+        try:
+            num = int(dir_name.split('.')[0])
+            existing_numbers.add(num)
+        except (ValueError, IndexError):
+            continue
+    
+    next_num = 1
+    while next_num in existing_numbers:
+        next_num += 1
+    
+    section_dir_name = f"{next_num:02d}. {section_name}"
+    section_dir = os.path.join(base_dir, section_dir_name)
+    
+    if not os.path.exists(section_dir):
+        os.makedirs(section_dir)
+        print(f"✓ Created new section: {section_dir_name}")
+        
+    return section_dir
 
+@retry_on_error()
 def generate_topic_content(chat_session, topic):
     """Generate initial content for a topic."""
     return chat_session.send_message(topic)
@@ -447,15 +495,33 @@ def save_topic_file(section_dir, topic, index, content):
     chat = filename_model.start_chat()
     suggested_name = chat.send_message(topic).text.strip()
     
-    # If this is a subtopic (section_dir already exists with content)
-    if os.path.exists(section_dir) and any(f for f in os.listdir(section_dir) if f.endswith('.md')):
-        next_num = get_next_subtopic_number(section_dir)
-        topic_filename = f"{next_num:02d}. {suggested_name}.md"
-    else:
-        topic_filename = f"{index:02d}. {suggested_name}.md"
+    # Get list of existing markdown files and their numbers
+    existing_files = [f for f in os.listdir(section_dir) if f.endswith('.md')]
+    existing_numbers = set()
     
+    for file in existing_files:
+        try:
+            num = int(file.split('.')[0])
+            existing_numbers.add(num)
+        except (ValueError, IndexError):
+            continue
+    
+    # Find the first available number
+    next_num = 1
+    while next_num in existing_numbers:
+        next_num += 1
+    
+    topic_filename = f"{next_num:02d}. {suggested_name}.md"
     topic_path = os.path.join(section_dir, topic_filename)
     
+    # Check if a similar file already exists (ignoring numbers)
+    for existing_file in existing_files:
+        existing_name = ' '.join(existing_file.split(' ')[1:]).replace('.md', '')
+        if existing_name.lower() == suggested_name.lower():
+            print(f"⚠️ Similar topic already exists: {existing_file}")
+            return existing_file
+    
+    # Save the new file
     with open(topic_path, "w", encoding='utf-8') as f:
         f.write(content.text)
     return topic_filename
@@ -474,7 +540,7 @@ def create_math_format_model():
         model_name="gemini-2.0-flash-exp",
         generation_config=math_config,
         safety_settings=SAFETY_SETTINGS,
-        system_instruction="""Format all mathematical expressions using LaTeX notation within $ or $$ delimiters. 
+        system_instruction=r"""Format all mathematical expressions using LaTeX notation within $ or $$ delimiters. 
         
 Examples of mathematical replacements:
 - F(X) = σ({Xk : k = 0, 1, ..., T}) → $F(X) = \sigma(\{X_k : k = 0, 1, \ldots, T\})$
@@ -676,6 +742,7 @@ Remember to:
 3. Use the specified format with 💡
 4. Keep all mathematical notation and references intact""")
 
+@retry_on_error()
 def process_topic_section(chat_session, topics, section_name, input_dir):
     """Process topics for a specific section and save individual topic files."""
     total_topics = len(topics)
@@ -688,24 +755,48 @@ def process_topic_section(chat_session, topics, section_name, input_dir):
     math_model = create_math_format_model()
     section_dir = create_section_directory(input_dir, section_name)
     
+    failed_topics = []
+    
     for i, topic in enumerate(topics, 1):
         print(f"\nTopic {i}/{total_topics}:")
         print(f"- {topic[:100]}...")
         
-        # Generate and enhance content
-        initial_response = generate_topic_content(chat_session, topic)
-        print("✓ Cleaning up prompt artifacts...")
-        cleaned_response = cleanup_prompt_artifacts(cleanup_model, initial_response)
-        print("✓ Adding numerical examples...")
-        with_examples = add_numerical_examples(examples_model, cleaned_response)
-        print("✓ Adding diagrams...")
-        with_diagrams = add_diagrams_to_content(diagram_model, with_examples)
-        print("✓ Formatting mathematical notation...")
-        final_response = format_math_notation(math_model, with_diagrams)
-        
-        # Save result
-        filename = save_topic_file(section_dir, topic, i, final_response)
-        print(f"✓ Saved topic with cleanup, examples, diagrams, and formatted math to: {filename}")
+        try:
+            # Generate and enhance content
+            initial_response = generate_topic_content(chat_session, topic)
+            print("✓ Cleaning up prompt artifacts...")
+            cleaned_response = cleanup_prompt_artifacts(cleanup_model, initial_response)
+            print("✓ Adding numerical examples...")
+            with_examples = add_numerical_examples(examples_model, cleaned_response)
+            print("✓ Adding diagrams...")
+            with_diagrams = add_diagrams_to_content(diagram_model, with_examples)
+            print("✓ Formatting mathematical notation...")
+            final_response = format_math_notation(math_model, with_diagrams)
+            
+            # Save result
+            filename = save_topic_file(section_dir, topic, i, final_response)
+            print(f"✓ Saved topic with cleanup, examples, diagrams, and formatted math to: {filename}")
+            
+        except Exception as e:
+            error_msg = f"""
+Time: {datetime.now()}
+Section: {section_name}
+Topic: {topic}
+Error: {str(e)}
+Stack Trace:
+{traceback.format_exc()}
+----------------------------------------
+"""
+            with open(os.path.join(BASE_DIR, "errors.txt"), "a", encoding='utf-8') as f:
+                f.write(error_msg)
+            failed_topics.append((topic, str(e)))
+            print(f"❌ Failed to process topic: {topic[:100]}...")
+            continue
+    
+    if failed_topics:
+        print(f"\n⚠️ Failed to process {len(failed_topics)} topics in section {section_name}:")
+        for topic, error in failed_topics:
+            print(f"- {topic[:100]}: {error}")
 
 def get_input_directories(base_dir):
     """Get all valid input directories from the base directory."""
