@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 import os
-import sys
 import warnings
 from datetime import datetime
 import traceback
@@ -10,14 +9,39 @@ import time
 from functools import wraps
 import re
 import json
+import google.generativeai as genai
+from google.generativeai.types import HarmCategory, HarmBlockThreshold
 
-from study_agent.crew import StudyAgent
+import warnings
+from cryptography.utils import CryptographyDeprecationWarning
+
+warnings.filterwarnings("ignore", category=CryptographyDeprecationWarning)
+
+from crew import StudyAgent
+from crewai import LLM
 from langchain_google_genai import ChatGoogleGenerativeAI
-from crewai_tools import DirectoryReadTool, FileReadTool
 
 warnings.filterwarnings("ignore", category=SyntaxWarning, module="pysbd")
 
-BASE_DIR = Path(__file__).parent.parent.parent
+# Safety settings
+SAFETY_SETTINGS = {
+    HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_NONE,
+    HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_NONE,
+    HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT: HarmBlockThreshold.BLOCK_NONE,
+    HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: HarmBlockThreshold.BLOCK_NONE
+}
+
+os.environ["GOOGLE_API_KEY"] = "AIzaSyBrDXc2PAh7QNj1lT6IHLEQ-AJvMqImisI"
+
+BASE_DIR = Path("/Workspace/Users/diego.rodrigues@stonex.com/statistical_learning_notes")
+
+TARGET_FOLDERS = [
+    "08. Random Forests"
+]
+
+
+# Configure Gemini API key before any operations
+genai.configure(api_key=os.environ["GOOGLE_API_KEY"])
 
 def retry_on_error(max_retries=3):
     """Decorator to retry a function on error with logging."""
@@ -38,27 +62,37 @@ Stack Trace:
 ----------------------------------------
 """
                         error_file = BASE_DIR / "errors.txt"
-                        error_file.write_text(error_msg, encoding='utf-8', mode='a')
+                        with open(error_file, 'a', encoding='utf-8') as f:
+                            f.write(error_msg)
                         print(f"❌ Failed after {max_retries} attempts: {func.__name__}")
                         raise
                     print(f"⚠️ Attempt {attempt + 1}/{max_retries} failed, retrying...")
                     time.sleep(2 ** attempt)  # Exponential backoff
-            return wrapper
+            return None
+        return wrapper
     return decorator
 
-def get_input_directories(base_dir: Path) -> List[Path]:
+def get_input_directories(base_dir):
     """Get all valid input directories from the base directory."""
     input_dirs = []
-    for item in base_dir.iterdir():
-        if not item.is_dir() or item.name.startswith("00."):
+    for item in os.listdir(base_dir):
+        dir_path = os.path.join(base_dir, item)
+        # Skip if not a directory or starts with "00."
+        if not os.path.isdir(dir_path) or item.startswith("00."):
             continue
-            
+
+        # Skip if target folders is specified
+        if len(TARGET_FOLDERS) > 0:
+            if not item in TARGET_FOLDERS:
+                continue
+
         # Skip if no topics.md found
-        if not any(f.name.lower() == "topics.md" for f in item.iterdir()):
+        if not any(f.lower() == "topics.md" for f in os.listdir(dir_path)):
             continue
-            
-        input_dirs.append(item)
+        # Convert to Path object before adding to list
+        input_dirs.append(Path(dir_path))
     return input_dirs
+
 
 def get_pdf_files(directory: Path) -> List[Path]:
     """Get all PDF files in the directory."""
@@ -71,20 +105,69 @@ def read_topics_file(directory: Path) -> str:
         return topics_file.read_text(encoding='utf-8')
     raise FileNotFoundError("topics.md not found in the specified directory")
 
-def get_topics_dict(topics_content: str, llm) -> Dict[str, List[str]]:
-    """Parse topics content into a dictionary of sections and topics using LLM."""
+def get_topics_dict(topics_content: str) -> Dict[str, List[str]]:
+    """Convert topics content to dictionary using Gemini."""
+    json_config = {
+        "temperature": 1,
+        "top_p": 0.95,
+        "top_k": 40,
+        "max_output_tokens": 8192,
+        "response_mime_type": "application/json",
+    }
     
-    # Configure LLM for filename generation
-    filename_llm = ChatGoogleGenerativeAI(
-        model="gemini-2.0-flash-exp",
-        temperature=0.3,  # Lower temperature for more consistent naming
-        top_p=0.95,
-        top_k=40,
-        max_output_tokens=1024,  # Reduced since we only need short responses
-        convert_system_message_to_human=True
-    )
+    topics_model = genai.GenerativeModel(
+        model_name="gemini-2.0-flash-exp",
+        generation_config=json_config,
+        safety_settings=SAFETY_SETTINGS,
+        system_instruction="""Convert the topics into a JSON format following these strict rules:
 
-    system_prompt = """Generate a concise, descriptive filename for the given topic. 
+1. Topic Names (Dictionary Keys):
+   - Remove any leading numbers and dots (e.g., "01. Topic" → "Topic")
+   - Use proper spacing between words
+   - Start with a capital letter
+   - No special characters or punctuation
+   - Maximum 50 characters
+   - Only letters, numbers, and spaces allowed
+
+2. JSON Structure:
+{
+    "Topic Name": [ "subtopic 1", "subtopic 2", ... ],
+    "Another Topic": [ "subtopic 1", "subtopic 2", ... ],
+    ...
+}
+
+CORRECT Examples:
+✅ "Financial Markets": [ ... ]
+✅ "Machine Learning Fundamentals": [ ... ]
+✅ "Statistical Analysis": [ ... ]
+
+INCORRECT Examples (DO NOT DO THIS):
+❌ "01. Financial_Markets": [ ... ]      (has number and underscore)
+❌ "machine learning": [ ... ]           (not capitalized)
+❌ "Statistical-Analysis": [ ... ]       (has hyphen)
+❌ "2. Data Science": [ ... ]            (has leading number)
+
+Return only the JSON object with properly formatted topic names as keys.""")
+    
+    chat = topics_model.start_chat()
+    response = chat.send_message(topics_content)
+    return json.loads(response.text)
+
+def create_filename_model():
+    """Create a model specifically for generating filenames."""
+    filename_config = {
+        "temperature": 0.7,  # Reduced for more consistent naming
+        "top_p": 0.95,
+        "top_k": 40,
+        "max_output_tokens": 1024,  # Reduced since we only need short responses
+        "response_mime_type": "text/plain",
+    }
+    
+    return genai.GenerativeModel(
+        model_name="gemini-1.5-flash",
+        generation_config=filename_config,
+        safety_settings=SAFETY_SETTINGS,
+        system_instruction="""Generate a concise, descriptive filename for the given topic. 
 
 REQUIREMENTS:
 - Maximum 50 characters
@@ -124,36 +207,15 @@ IMPORTANT:
 4. NO explanations or additional text
 5. NO punctuation marks
 6. ALWAYS start with a capital letter
-7. ALWAYS use proper spacing between words"""
-
-    # Get filename suggestion from LLM
-    messages = [
-        {"role": "system", "content": system_prompt},
-        {"role": "user", "content": topics_content}
-    ]
-    
-    try:
-        response = filename_llm.invoke(messages)
-        suggested_name = response.content.strip()
-        
-        # Basic validation of the suggested name
-        if len(suggested_name) > 50 or not suggested_name[0].isupper():
-            # Fall back to basic cleaning if validation fails
-            suggested_name = ' '.join(word.capitalize() for word in topics_content.split()[:5])
-            suggested_name = re.sub(r'[^\w\s]', '', suggested_name)[:50].strip()
-            
-        return suggested_name
-        
-    except Exception as e:
-        print(f"❌ Failed to generate filename with LLM: {str(e)}")
-        # Fall back to basic cleaning
-        return ' '.join(word.capitalize() for word in topics_content.split()[:5])[:50]
+7. ALWAYS use proper spacing between words""")
 
 def save_topic_file(section_dir: Path, topic: str, content: str) -> str:
     """Save topic content to a file with proper numbering."""
     # Get suggested name from LLM
-    suggested_name = get_topics_dict(topic, None)  # Pass None since we don't need the full topics dict functionality
-    
+    filename_model = create_filename_model()
+    chat = filename_model.start_chat()
+    suggested_name = chat.send_message(topic).text.strip()
+        
     # Get list of existing markdown files and their numbers
     existing_files = [f for f in section_dir.glob("*.md")]
     existing_numbers = {
@@ -221,13 +283,13 @@ def create_section_directory(base_dir, section_name):
 
 def read_prompt_file(base_dir: Path) -> str:
     """Read the system prompt file."""
-    prompt_file = base_dir / "00. prompts" / "Resumo.md"
+    prompt_file = base_dir / "02. Linear Classification" / "prompt.md"
     if not prompt_file.exists():
         raise FileNotFoundError("Prompt file not found at: {}".format(prompt_file))
     return prompt_file.read_text(encoding='utf-8')
 
 @retry_on_error()
-def process_directory(directory: Path, llm) -> None:
+def process_directory(directory: Path, llm: ChatGoogleGenerativeAI) -> None:
     """Process a single directory with the crew."""
     print(f"\nProcessing directory: {directory}")
     
@@ -243,7 +305,7 @@ def process_directory(directory: Path, llm) -> None:
         
         # Read topics file and parse with LLM
         topics_content = read_topics_file(directory)
-        topics_dict = get_topics_dict(topics_content, llm)
+        topics_dict = get_topics_dict(topics_content)
         
         # Create crew with necessary tools and configuration
         crew = StudyAgent().crew(llm=llm)
@@ -296,9 +358,11 @@ Stack Trace:
 ----------------------------------------
 """
         error_file = BASE_DIR / "errors.txt"
-        error_file.write_text(error_msg, encoding='utf-8', mode='a')
+        with open(error_file, 'a', encoding='utf-8') as f:
+            f.write(error_msg)
         print(f"❌ Failed to process directory: {directory}")
         print(f"Error: {str(e)}")
+        print(error_msg)
 
 def run():
     """Run the crew following the reference script workflow."""
@@ -306,10 +370,11 @@ def run():
     if "GOOGLE_API_KEY" not in os.environ:
         raise ValueError("GOOGLE_API_KEY environment variable is required")
     
-    gemini_llm = ChatGoogleGenerativeAI(
-        model="gemini-2.0-flash-exp",
+    gemini_llm = LLM(
+        model="gemini/gemini-2.0-flash-exp",
         temperature=0.7,
-        google_api_key=os.environ["GOOGLE_API_KEY"]
+        api_key=os.environ["GOOGLE_API_KEY"],
+        seed=42
     )
     
     # Get input directories
@@ -318,7 +383,7 @@ def run():
         print("No valid input directories found!")
         return
     
-    # Process each directory
+    # Process each directory (no need to convert to Path here anymore)
     for directory in input_directories:
         process_directory(directory, gemini_llm)
 

@@ -89,12 +89,7 @@ class StudyAgent():
 		"""Analyzes input documents and extracts key concepts"""
 		return Task(
 			config=self.tasks_config['analyze_documents_task'],
-			context=[
-				"You must read and analyze the following PDF files: {pdf_files}",
-				"For each PDF file:",
-				"1. Use FileReadTool to read the content",
-				"Use this system prompt to guide your analysis: {system_prompt}"
-			],
+			context=[],
 			tools=[
 				FileReadTool()
 			]
@@ -139,7 +134,7 @@ class StudyAgent():
 			config=self.tasks_config['write_content_task'],
 			context=[self.format_math_task()],
 			tools=[FileWriterTool()],
-			output_file='{section_dir}/{topic_number:02d}. {topic_name}.md'
+			output_file='{section_dir}/{topic_number}. {topic_name}.md'
 		)
 
 	@crew
