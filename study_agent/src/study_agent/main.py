@@ -20,6 +20,7 @@ warnings.filterwarnings("ignore", category=CryptographyDeprecationWarning)
 from crew import StudyAgent
 from crewai import LLM
 from langchain_google_genai import ChatGoogleGenerativeAI
+from litellm import CustomLLM
 
 warnings.filterwarnings("ignore", category=SyntaxWarning, module="pysbd")
 
@@ -357,8 +358,59 @@ def wait_for_files_active(files):
   print()
 
 
+class GeminiLLM(CustomLLM):
+    def __init__(self, model="gemini-2.0-flash-exp", temperature=0.7):
+        super().__init__()
+        self.model = model
+        self.temperature = temperature
+        self.genai_model = genai.GenerativeModel(
+            model_name=model,
+            generation_config={
+                "temperature": temperature,
+                "top_p": 0.95,
+                "top_k": 40,
+                "max_output_tokens": 8192,
+            },
+            safety_settings=SAFETY_SETTINGS
+        )
+
+    def completion(self, messages, model=None, **kwargs):
+        try:
+            # Initialize chat
+            chat = self.genai_model.start_chat()
+            last_response = None
+            
+            # Process each message in the conversation
+            for message in messages:
+                if message["role"] == "user":
+                    last_response = chat.send_message(message["content"])
+                elif message["role"] == "system":
+                    # Handle system messages by incorporating them into the next user message
+                    continue
+                elif message["role"] == "assistant":
+                    # Skip assistant messages as they're handled in the chat history
+                    continue
+            
+            if last_response is None:
+                raise Exception("No valid user message found in the conversation")
+            
+            # Format response to match CrewAI's expected format
+            return {
+                "choices": [{
+                    "message": {
+                        "content": last_response.text,
+                        "role": "assistant"
+                    }
+                }]
+            }
+        except Exception as e:
+            raise Exception(f"Error in Gemini completion: {str(e)}")
+
+    def get_model_name(self):
+        return self.model
+
 @retry_on_error()
-def process_directory(directory: Path, llm: ChatGoogleGenerativeAI) -> None:
+def process_directory(directory: Path, llm: GeminiLLM) -> None:
     """Process a single directory with the crew."""
     print(f"\nProcessing directory: {directory}")
     
@@ -384,7 +436,7 @@ def process_directory(directory: Path, llm: ChatGoogleGenerativeAI) -> None:
         topics_content = read_topics_file(directory)
         topics_dict = get_topics_dict(topics_content)
         
-        # Create crew with necessary tools and configuration
+        # Create crew with the Gemini LLM
         crew = StudyAgent().crew(llm=llm)
         
         # Process each section separately
@@ -446,15 +498,13 @@ Stack Trace:
 
 def run():
     """Run the crew following the reference script workflow."""
-    # Set up Gemini LLM with proper configuration
     if "GOOGLE_API_KEY" not in os.environ:
         raise ValueError("GOOGLE_API_KEY environment variable is required")
     
-    # Update LLM configuration to explicitly use Google's API
-    gemini_llm = LLM(
-        model="gemini/gemini-2.0-flash-exp",
-        temperature=0.7,
-        seed=42
+    # Create custom Gemini LLM
+    gemini_llm = GeminiLLM(
+        model="gemini-2.0-flash-exp",
+        temperature=0.7
     )
     
     # Get input directories
@@ -463,7 +513,7 @@ def run():
         print("No valid input directories found!")
         return
     
-    # Process each directory
+    # Process each directory with the Gemini LLM
     for directory in input_directories:
         process_directory(directory, gemini_llm)
 

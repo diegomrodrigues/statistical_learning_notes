@@ -114,22 +114,33 @@ class StudyAgent():
 	def crew(self, llm=None) -> Crew:
 		"""Creates the StudyAgent crew with sequential processing"""
 		self.llm = llm
+		
+		# Create agents with the custom LLM
+		agents = [
+			self.cleanup_agent(),
+			self.examples_generator(),
+			self.diagram_creator(),
+			self.math_formatter(),
+			self.content_writer()
+		]
+		
+		# Create tasks with the custom LLM
+		tasks = [
+			self.cleanup_task(),
+			self.generate_examples_task(),
+			self.create_diagrams_task(),
+			self.format_math_task(),
+			self.write_content_task()
+		]
 
+		# Configure each agent and task to use the custom LLM
+		for agent in agents:
+			agent.llm = self.llm
+			
 		return Crew(
-			agents=[
-				self.cleanup_agent(),
-				self.examples_generator(),
-				self.diagram_creator(),
-				self.math_formatter(),
-				self.content_writer()
-			],
-			tasks=[
-				self.cleanup_task(),
-				self.generate_examples_task(),
-				self.create_diagrams_task(), 
-				self.format_math_task(),
-				self.write_content_task()
-			],
+			agents=agents,
+			tasks=tasks,
 			process=Process.sequential,
-			verbose=True
+			verbose=True,
+			manager_llm=self.llm
 		)
