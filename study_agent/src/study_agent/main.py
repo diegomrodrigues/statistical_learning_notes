@@ -33,7 +33,7 @@ SAFETY_SETTINGS = {
 
 os.environ["GOOGLE_API_KEY"] = "AIzaSyBrDXc2PAh7QNj1lT6IHLEQ-AJvMqImisI"
 
-BASE_DIR = Path("/Workspace/Users/diego.rodrigues@stonex.com/statistical_learning_notes")
+BASE_DIR = Path("/content/statistical_learning_notes")
 
 TARGET_FOLDERS = [
     "08. Random Forests"
