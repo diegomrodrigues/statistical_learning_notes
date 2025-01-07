@@ -288,10 +288,9 @@ def read_prompt_file(base_dir: Path) -> str:
         raise FileNotFoundError("Prompt file not found at: {}".format(prompt_file))
     return prompt_file.read_text(encoding='utf-8')
 
-
-def create_draft_model(prompt_file):
+def create_draft_model(system_prompt_content):
     """Create and configure the model for initial draft generation."""
-    print(f"\nCreating draft model with prompt from: {prompt_file}")
+    print("\nCreating draft model...")
     
     draft_config = {
         "temperature": 0.7,
@@ -301,13 +300,12 @@ def create_draft_model(prompt_file):
         "response_mime_type": "text/plain",
     }
     
-    with open(prompt_file, 'r') as system_prompt:
-        model = genai.GenerativeModel(
-            model_name="gemini-2.0-flash-exp",
-            generation_config=draft_config,
-            safety_settings=SAFETY_SETTINGS,
-            system_instruction="\n".join(system_prompt.readlines()),
-        )
+    model = genai.GenerativeModel(
+        model_name="gemini-2.0-flash-exp",
+        generation_config=draft_config,
+        safety_settings=SAFETY_SETTINGS,
+        system_instruction=system_prompt_content,
+    )
     print("✓ Draft model created successfully")
     return model
 
@@ -448,15 +446,14 @@ Stack Trace:
 
 def run():
     """Run the crew following the reference script workflow."""
-    # Set up Gemini LLM
+    # Set up Gemini LLM with proper configuration
     if "GOOGLE_API_KEY" not in os.environ:
         raise ValueError("GOOGLE_API_KEY environment variable is required")
     
+    # Update LLM configuration to explicitly use Google's API
     gemini_llm = LLM(
-        provider="google",
         model="gemini/gemini-2.0-flash-exp",
         temperature=0.7,
-        api_key=os.environ["GOOGLE_API_KEY"],
         seed=42
     )
     
@@ -466,7 +463,7 @@ def run():
         print("No valid input directories found!")
         return
     
-    # Process each directory (no need to convert to Path here anymore)
+    # Process each directory
     for directory in input_directories:
         process_directory(directory, gemini_llm)
 

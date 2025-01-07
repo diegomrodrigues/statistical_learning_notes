@@ -9,6 +9,10 @@ class StudyAgent():
 	agents_config = 'config/agents.yaml'
 	tasks_config = 'config/tasks.yaml'
 
+	def __init__(self):
+		super().__init__()
+		self.llm = None
+
 	@agent
 	def cleanup_agent(self) -> Agent:
 		"""Creates a cleanup agent to remove prompt artifacts"""
@@ -17,13 +21,7 @@ class StudyAgent():
 			tools=[],
 			verbose=True,
 			allow_delegation=True,
-			memory=False,
-			llm_config={
-				"temperature": 0.3,
-				"top_p": 0.95,
-				"top_k": 40,
-				"max_output_tokens": 8192,
-			}
+			llm=self.llm
 		)
 
 	@agent
@@ -34,7 +32,7 @@ class StudyAgent():
 			tools=[],
 			verbose=True,
 			allow_delegation=True,
-			memory=False
+			llm=self.llm
 		)
 
 	@agent
@@ -45,7 +43,7 @@ class StudyAgent():
 			tools=[],
 			verbose=True,
 			allow_delegation=True,
-			memory=False
+			llm=self.llm
 		)
 
 	@agent
@@ -56,7 +54,7 @@ class StudyAgent():
 			tools=[],
 			verbose=True,
 			allow_delegation=True,
-			memory=False
+			llm=self.llm
 		)
 
 	@agent
@@ -67,7 +65,7 @@ class StudyAgent():
 			tools=[],
 			verbose=True,
 			allow_delegation=True,
-			memory=False
+			llm=self.llm
 		)
 
 	@task
@@ -115,6 +113,8 @@ class StudyAgent():
 	@crew
 	def crew(self, llm=None) -> Crew:
 		"""Creates the StudyAgent crew with sequential processing"""
+		self.llm = llm
+
 		return Crew(
 			agents=[
 				self.cleanup_agent(),
@@ -131,6 +131,5 @@ class StudyAgent():
 				self.write_content_task()
 			],
 			process=Process.sequential,
-			verbose=True,
-			llm=llm
+			verbose=True
 		)
