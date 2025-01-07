@@ -1,29 +1,66 @@
-analyze_documents_task:
+cleanup_task:
   description: >
-    You must analyze the following PDF files using the prompt and the topic (X): {pdf_files}
+    Clean up prompt artifacts and instructions while preserving:
+    1. All actual content and mathematical formulas
+    2. Technical explanations and proofs
+    3. Theorems, lemmas, and corollaries
+    4. Diagrams and image descriptions
+    5. References with actual content [^n]
+    6. Section titles and headers
+    7. Mermaid diagrams with actual content
+    8. Mathematical notation ($, $$)
+    9. Formatting (**, *, >, emojis) with technical content
+    10. Proof endings ($\blacksquare$)
+    11. Technical notes marked with emojis (⚠️❗✔️💡)
+    
+    Remove these types of artifacts:
+    - "Seu capítulo deve ser construído..."
+    - "Baseie seu capítulo exclusivamente..."
+    - "Organize o conteúdo logicamente..."
+    - "Use $ para expressões matemáticas..."
+    - "Adicione lemmas e corolários..."
+    - "Lembre-se de usar $ em vez de..."
+    - "Tenha cuidado para não se desviar..."
+    - "Exemplos técnicos devem ser apenas em Python..."
+    - "Não traduza nomes técnicos..."
+    - "Incorpore diagramas e mapas mentais..."
+    - "Continue explicando em detalhe..."
+    - "Deseja que eu continue com as próximas seções?"
+    - References to "o contexto" or "conforme indicado no contexto"
+    - Meta-instructions about formatting or structure
+    - Any text discussing how to use Mermaid, LaTeX, or image tags
+    - Instructions about how to write proofs or theorems
+    - References to [^X], [^Y], [^Z] without actual content
+    - Placeholder text like "{{ X }}" or "<X>"
+    - "Nota:" or "Importante:" sections containing only instructions
+    
+    Guidelines:
+    1. Remove only meta-instructions and prompt artifacts
+    2. Ensure the flow remains natural after removing artifacts
+    3. Keep all actual technical content intact
+    4. Preserve formatting when used for actual content
+    5. Keep proof endings but remove instructions about using them
+    6. Keep technical notes with emojis, remove instructional ones
+    7. Maintain document structure and readability
+    8. Preserve all mathematical notation and diagrams
 
-    For each PDF file:
-    1. Use FileReadTool to read the content from all pdf files
-    2. Extract key concepts and information
-    3. Focus on content related to: X = {topic}
-    4. Create a structured analysis following the prompt below:
+    Text content to be cleanup:
 
-    Follow these instructions:
-    <prompt>
-    {system_prompt}
-    </prompt>
-
-    IMPORTANT:
-    - You MUST read ALL PDF file using FileReadTool
-    - Focus on content relevant to: X = {topic}
-
-    X = {topic}
+    <content>
+    {initial_draft}
+    </content>
 
   expected_output: >
-    A comprehensive analysis containing:
-    - Key concepts from all PDF files
-    - Clear structure and organization following prompt
-  agent: document_analyzer
+    Clean content with:
+    - All technical content preserved
+    - Mathematical notation intact
+    - Document structure maintained
+    - No prompt artifacts or instructions
+    - Natural flow and readability
+    - Preserved formatting for actual content
+    - Kept technical notes and emojis
+    - Removed all meta-instructions
+  agent: cleanup_agent
 
 format_math_task:
   description: >
@@ -38,12 +75,12 @@ format_math_task:
     8. Don't modify existing correctly formatted LaTeX
 
     Example mathematical replacements:
-    - F(X) = σ({Xk : k = 0, 1, ..., T}) → $F(X) = \sigma(\{X_k : k = 0, 1, \ldots, T\})$
-    - {X(t1) ∈ B1, X(t2) ∈ B2, ..., X(tk) ∈ Bk} → $\{X(t_1) \in B_1, X(t_2) \in B_2, \ldots, X(t_k) \in B_k\}$
+    - F(X) = σ({{Xk : k = 0, 1, ..., T}}) → $F(X) = \sigma(\{{X_k : k = 0, 1, \ldots, T\}})$
+    - {{X(t1) ∈ B1, X(t2) ∈ B2, ..., X(tk) ∈ Bk}} → $\{{X(t_1) \in B_1, X(t_2) \in B_2, \ldots, X(t_k) \in B_k\}}$
     - P(X ≤ x) → $P(X \leq x)$
     - E[X] = ∫ x dF(x) → $E[X] = \int x \, dF(x)$
     - σ² = E[(X - μ)²] → $\sigma^2 = E[(X - \mu)^2]$
-    - ∑(xi - x̄)² → $\sum(x_i - \bar{x})^2$
+    - ∑(xi - x̄)² → $\sum(x_i - \bar{{x}})^2$
 
     ⚠️ CURRENCY FORMATTING (IMPORTANT):
     Currency symbols must be escaped to prevent markdown conflicts!
@@ -199,8 +236,8 @@ generate_examples_task:
     ```
 
     3. Show mathematical calculations step by step:
-    $\text{Step 1: } \beta = (X^TX)^{-1}X^Ty$
-    $\text{Step 2: } ...$
+    $\text{{Step 1: }} \beta = (X^TX)^{{-1}}X^Ty$
+    $\text{{Step 2: }} ...$
 
     4. Use tables for comparing methods:
     | Method | MSE | R² | Parameters |
@@ -268,61 +305,3 @@ write_content_task:
     - Consistent structure and formatting
     - No prompt artifacts or instructions
   agent: content_writer
-
-cleanup_task:
-  description: >
-    Clean up prompt artifacts and instructions while preserving:
-    1. All actual content and mathematical formulas
-    2. Technical explanations and proofs
-    3. Theorems, lemmas, and corollaries
-    4. Diagrams and image descriptions
-    5. References with actual content [^n]
-    6. Section titles and headers
-    7. Mermaid diagrams with actual content
-    8. Mathematical notation ($, $$)
-    9. Formatting (**, *, >, emojis) with technical content
-    10. Proof endings ($\blacksquare$)
-    11. Technical notes marked with emojis (⚠️❗✔️💡)
-    
-    Remove these types of artifacts:
-    - "Seu capítulo deve ser construído..."
-    - "Baseie seu capítulo exclusivamente..."
-    - "Organize o conteúdo logicamente..."
-    - "Use $ para expressões matemáticas..."
-    - "Adicione lemmas e corolários..."
-    - "Lembre-se de usar $ em vez de..."
-    - "Tenha cuidado para não se desviar..."
-    - "Exemplos técnicos devem ser apenas em Python..."
-    - "Não traduza nomes técnicos..."
-    - "Incorpore diagramas e mapas mentais..."
-    - "Continue explicando em detalhe..."
-    - "Deseja que eu continue com as próximas seções?"
-    - References to "o contexto" or "conforme indicado no contexto"
-    - Meta-instructions about formatting or structure
-    - Any text discussing how to use Mermaid, LaTeX, or image tags
-    - Instructions about how to write proofs or theorems
-    - References to [^X], [^Y], [^Z] without actual content
-    - Placeholder text like "{{ X }}" or "<X>"
-    - "Nota:" or "Importante:" sections containing only instructions
-    
-    Guidelines:
-    1. Remove only meta-instructions and prompt artifacts
-    2. Ensure the flow remains natural after removing artifacts
-    3. Keep all actual technical content intact
-    4. Preserve formatting when used for actual content
-    5. Keep proof endings but remove instructions about using them
-    6. Keep technical notes with emojis, remove instructional ones
-    7. Maintain document structure and readability
-    8. Preserve all mathematical notation and diagrams
-
-  expected_output: >
-    Clean content with:
-    - All technical content preserved
-    - Mathematical notation intact
-    - Document structure maintained
-    - No prompt artifacts or instructions
-    - Natural flow and readability
-    - Preserved formatting for actual content
-    - Kept technical notes and emojis
-    - Removed all meta-instructions
-  agent: cleanup_agent

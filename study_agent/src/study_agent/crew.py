@@ -10,20 +10,6 @@ class StudyAgent():
 	tasks_config = 'config/tasks.yaml'
 
 	@agent
-	def document_analyzer(self) -> Agent:
-		"""Creates an analyzer agent to process input documents"""
-		return Agent(
-			config=self.agents_config['document_analyzer'],
-			tools=[
-				DirectoryReadTool(),
-				FileReadTool(),
-			],
-			verbose=True,
-			allow_delegation=True,
-			memory=True
-		)
-
-	@agent
 	def math_formatter(self) -> Agent:
 		"""Creates a formatter agent to handle mathematical notation"""
 		return Agent(
@@ -85,22 +71,11 @@ class StudyAgent():
 		)
 
 	@task
-	def analyze_documents_task(self) -> Task:
-		"""Analyzes input documents and extracts key concepts"""
-		return Task(
-			config=self.tasks_config['analyze_documents_task'],
-			context=[],
-			tools=[
-				FileReadTool()
-			]
-		)
-
-	@task
 	def cleanup_task(self) -> Task:
 		"""Cleans up prompt artifacts from generated content"""
 		return Task(
 			config=self.tasks_config['cleanup_task'],
-			context=[self.analyze_documents_task()]
+			context=[]
 		)
 
 	@task

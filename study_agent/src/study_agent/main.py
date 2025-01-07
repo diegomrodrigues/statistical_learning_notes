@@ -288,6 +288,77 @@ def read_prompt_file(base_dir: Path) -> str:
         raise FileNotFoundError("Prompt file not found at: {}".format(prompt_file))
     return prompt_file.read_text(encoding='utf-8')
 
+
+def create_draft_model(prompt_file):
+    """Create and configure the model for initial draft generation."""
+    print(f"\nCreating draft model with prompt from: {prompt_file}")
+    
+    draft_config = {
+        "temperature": 0.7,
+        "top_p": 0.95,
+        "top_k": 40,
+        "max_output_tokens": 8192,
+        "response_mime_type": "text/plain",
+    }
+    
+    with open(prompt_file, 'r') as system_prompt:
+        model = genai.GenerativeModel(
+            model_name="gemini-2.0-flash-exp",
+            generation_config=draft_config,
+            safety_settings=SAFETY_SETTINGS,
+            system_instruction="\n".join(system_prompt.readlines()),
+        )
+    print("✓ Draft model created successfully")
+    return model
+
+@retry_on_error()
+def generate_initial_draft(model, files, topic):
+    """Generate initial draft for a topic using the provided files."""
+    print(f"\nGenerating initial draft for topic: {topic[:100]}...")
+    
+    # Initialize chat with files
+    history = []
+    for file in files:
+        history.append({
+            "role": "user",
+            "parts": [file],
+        })
+    
+    chat = model.start_chat(history=history)
+    response = chat.send_message(topic)
+    print("✓ Initial draft generated")
+    return response.text
+
+def upload_to_gemini(path, mime_type=None):
+    """Uploads the given file to Gemini."""
+    print(f"\nUploading file: {path}")
+    file = genai.upload_file(path, mime_type=mime_type)
+    print(f"✓ Uploaded file '{file.display_name}' as: {file.uri}")
+    return file
+
+def wait_for_files_active(files):
+  """Waits for the given files to be active.
+
+  Some files uploaded to the Gemini API need to be processed before they can be
+  used as prompt inputs. The status can be seen by querying the file's "state"
+  field.
+
+  This implementation uses a simple blocking polling loop. Production code
+  should probably employ a more sophisticated approach.
+  """
+  print("Waiting for file processing...")
+  for name in (file.name for file in files):
+    file = genai.get_file(name)
+    while file.state.name == "PROCESSING":
+      print(".", end="", flush=True)
+      time.sleep(10)
+      file = genai.get_file(name)
+    if file.state.name != "ACTIVE":
+      raise Exception(f"File {file.name} failed to process")
+  print("...all files ready")
+  print()
+
+
 @retry_on_error()
 def process_directory(directory: Path, llm: ChatGoogleGenerativeAI) -> None:
     """Process a single directory with the crew."""
@@ -302,6 +373,14 @@ def process_directory(directory: Path, llm: ChatGoogleGenerativeAI) -> None:
     try:
         # Read system prompt
         system_prompt = read_prompt_file(BASE_DIR)
+        
+        # Create draft model and upload files to Gemini
+        draft_model = create_draft_model(system_prompt)
+        uploaded_files = [
+            upload_to_gemini(str(pdf), mime_type="application/pdf") 
+            for pdf in pdf_files
+        ]
+        wait_for_files_active(uploaded_files)
         
         # Read topics file and parse with LLM
         topics_content = read_topics_file(directory)
@@ -330,14 +409,17 @@ def process_directory(directory: Path, llm: ChatGoogleGenerativeAI) -> None:
                 while topic_num in existing_numbers:
                     topic_num += 1
                 
-                # Process the topic with crew
+                # Generate initial draft
+                initial_draft = generate_initial_draft(draft_model, uploaded_files, topic)
+                
+                # Process the draft with crew
                 result = crew.kickoff(
                     inputs={
                         'directory': str(directory),
                         'section_dir': str(section_dir),
-                        'pdf_files': [str(f) for f in pdf_files],
+                        'initial_draft': initial_draft,
                         'topic': topic,
-                        'topic_number': topic_num,  # Pass the topic number
+                        'topic_number': topic_num,
                         'section_name': numbered_section_name,
                         'topics_content': topics_content,
                         'system_prompt': system_prompt
@@ -371,6 +453,7 @@ def run():
         raise ValueError("GOOGLE_API_KEY environment variable is required")
     
     gemini_llm = LLM(
+        provider="google",
         model="gemini/gemini-2.0-flash-exp",
         temperature=0.7,
         api_key=os.environ["GOOGLE_API_KEY"],
