@@ -20,7 +20,7 @@ class StudyAgent():
 			config=self.agents_config['cleanup_agent'],
 			tools=[],
 			verbose=True,
-			allow_delegation=True,
+			allow_delegation=False,
 			llm=self.llm
 		)
 
@@ -31,7 +31,7 @@ class StudyAgent():
 			config=self.agents_config['math_formatter'],
 			tools=[],
 			verbose=True,
-			allow_delegation=True,
+			allow_delegation=False,
 			llm=self.llm
 		)
 
@@ -42,7 +42,7 @@ class StudyAgent():
 			config=self.agents_config['diagram_creator'],
 			tools=[],
 			verbose=True,
-			allow_delegation=True,
+			allow_delegation=False,
 			llm=self.llm
 		)
 
@@ -53,7 +53,7 @@ class StudyAgent():
 			config=self.agents_config['examples_generator'],
 			tools=[],
 			verbose=True,
-			allow_delegation=True,
+			allow_delegation=False,
 			llm=self.llm
 		)
 
@@ -64,7 +64,7 @@ class StudyAgent():
 			config=self.agents_config['content_writer'],
 			tools=[],
 			verbose=True,
-			allow_delegation=True,
+			allow_delegation=False,
 			llm=self.llm
 		)
 
