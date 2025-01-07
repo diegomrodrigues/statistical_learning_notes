@@ -10,6 +10,23 @@ class StudyAgent():
 	tasks_config = 'config/tasks.yaml'
 
 	@agent
+	def cleanup_agent(self) -> Agent:
+		"""Creates a cleanup agent to remove prompt artifacts"""
+		return Agent(
+			config=self.agents_config['cleanup_agent'],
+			tools=[],
+			verbose=True,
+			allow_delegation=True,
+			memory=False,
+			llm_config={
+				"temperature": 0.3,
+				"top_p": 0.95,
+				"top_k": 40,
+				"max_output_tokens": 8192,
+			}
+		)
+
+	@agent
 	def math_formatter(self) -> Agent:
 		"""Creates a formatter agent to handle mathematical notation"""
 		return Agent(
@@ -51,23 +68,6 @@ class StudyAgent():
 			verbose=True,
 			allow_delegation=True,
 			memory=False
-		)
-
-	@agent
-	def cleanup_agent(self) -> Agent:
-		"""Creates a cleanup agent to remove prompt artifacts"""
-		return Agent(
-			config=self.agents_config['cleanup_agent'],
-			tools=[],
-			verbose=True,
-			allow_delegation=True,
-			memory=False,
-			llm_config={
-				"temperature": 0.3,
-				"top_p": 0.95,
-				"top_k": 40,
-				"max_output_tokens": 8192,
-			}
 		)
 
 	@task
@@ -117,7 +117,6 @@ class StudyAgent():
 		"""Creates the StudyAgent crew with sequential processing"""
 		return Crew(
 			agents=[
-				self.document_analyzer(),
 				self.cleanup_agent(),
 				self.examples_generator(),
 				self.diagram_creator(),
@@ -125,7 +124,6 @@ class StudyAgent():
 				self.content_writer()
 			],
 			tasks=[
-				self.analyze_documents_task(),
 				self.cleanup_task(),
 				self.generate_examples_task(),
 				self.create_diagrams_task(), 

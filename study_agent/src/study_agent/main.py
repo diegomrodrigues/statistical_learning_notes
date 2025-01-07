@@ -325,7 +325,7 @@ def generate_initial_draft(model, files, topic):
         })
     
     chat = model.start_chat(history=history)
-    response = chat.send_message(topic)
+    response = chat.send_message(f"X = {topic}")
     print("✓ Initial draft generated")
     return response.text
 
