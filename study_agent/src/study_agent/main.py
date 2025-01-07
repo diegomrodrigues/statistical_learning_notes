@@ -413,16 +413,15 @@ def process_directory(directory: Path, llm: ChatGoogleGenerativeAI) -> None:
                 # Process the draft with crew
                 result = crew.kickoff(
                     inputs={
-                        'directory': str(directory),
-                        'section_dir': str(section_dir),
-                        'initial_draft': initial_draft,
-                        'topic': topic,
-                        'topic_number': topic_num,
-                        'section_name': numbered_section_name,
-                        'topics_content': topics_content,
-                        'system_prompt': system_prompt
+                        'initial_draft': initial_draft
                     }
                 )
+                
+                # Save the result using save_topic_file
+                if result:
+                    filename = save_topic_file(section_dir, topic, result)
+                    print(f"✓ Saved topic to: {filename}")
+                
                 existing_numbers.add(topic_num)
             
         print(f"✓ Successfully processed directory: {directory}")

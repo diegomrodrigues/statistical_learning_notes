@@ -57,17 +57,6 @@ class StudyAgent():
 			llm=self.llm
 		)
 
-	@agent
-	def content_writer(self) -> Agent:
-		"""Creates a writer agent to generate final content"""
-		return Agent(
-			config=self.agents_config['content_writer'],
-			tools=[],
-			verbose=True,
-			allow_delegation=False,
-			llm=self.llm
-		)
-
 	@task
 	def cleanup_task(self) -> Task:
 		"""Cleans up prompt artifacts from generated content"""
@@ -100,19 +89,14 @@ class StudyAgent():
 			context=[self.create_diagrams_task()]  # Depends on content with diagrams
 		)
 
-	@task
-	def write_content_task(self) -> Task:
-		"""Generates final content with all components"""
-		return Task(
-			config=self.tasks_config['write_content_task'],
-			context=[self.format_math_task()],
-			tools=[FileWriterTool()],
-			output_file='{section_dir}/{topic_number}. {topic_name}.md'
-		)
-
 	@crew
-	def crew(self, llm=None) -> Crew:
-		"""Creates the StudyAgent crew with sequential processing"""
+	def crew(self, llm=None, verbose=True) -> Crew:
+		"""Creates the StudyAgent crew with sequential processing
+		
+		Args:
+			llm: Optional language model to use
+			verbose: Whether to enable verbose output (default: True)
+		"""
 		self.llm = llm
 		
 		# Create agents with the custom LLM
@@ -120,8 +104,7 @@ class StudyAgent():
 			self.cleanup_agent(),
 			self.examples_generator(),
 			self.diagram_creator(),
-			self.math_formatter(),
-			self.content_writer()
+			self.math_formatter()
 		]
 		
 		# Create tasks with the custom LLM
@@ -129,18 +112,18 @@ class StudyAgent():
 			self.cleanup_task(),
 			self.generate_examples_task(),
 			self.create_diagrams_task(),
-			self.format_math_task(),
-			self.write_content_task()
+			self.format_math_task()
 		]
 
 		# Configure each agent and task to use the custom LLM
 		for agent in agents:
 			agent.llm = self.llm
+			agent.verbose = verbose  # Set verbose for each agent
 			
 		return Crew(
 			agents=agents,
 			tasks=tasks,
 			process=Process.sequential,
-			verbose=True,
+			verbose=verbose,  # Use the passed verbose parameter
 			manager_llm=self.llm
 		)

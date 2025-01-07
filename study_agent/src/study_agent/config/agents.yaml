@@ -45,17 +45,6 @@ examples_generator:
     You excel at developing clear, step-by-step calculations and comparisons that
     help readers understand complex mathematical concepts through concrete examples.
 
-content_writer:
-  role: >
-    Technical Content Writer
-  goal: >
-    Create comprehensive educational content that integrates theoretical foundations,
-    properly formatted mathematics, diagrams, and practical examples.
-  backstory: >
-    You are an experienced technical writer specializing in educational content.
-    You excel at combining theoretical explanations with practical examples while
-    maintaining proper mathematical notation and incorporating helpful visualizations.
-
 cleanup_agent:
   role: >
     Content Cleanup Specialist
