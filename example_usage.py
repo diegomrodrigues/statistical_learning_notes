@@ -107,10 +107,9 @@ def process_directory(directory: Path, processor: TaskProcessor, tasks_config: d
         
         # Process sections in parallel
         with ThreadPoolExecutor(max_workers=max_workers) as executor:
-            # First, submit all topic processing tasks
-            future_to_topic = {}
+            futures = []
             for section_name, section_topics in topics.items():
-                print(f"\nSubmitting section: {section_name}")
+                print(f"\nProcessing section: {section_name}")
                 for topic in section_topics:
                     future = executor.submit(
                         process_section_topic,
@@ -120,38 +119,28 @@ def process_directory(directory: Path, processor: TaskProcessor, tasks_config: d
                         processor,
                         tasks_config
                     )
-                    future_to_topic[future] = (section_name, topic)
+                    # Save the result immediately when it's ready
+                    def save_callback(future, section_name=section_name):
+                        try:
+                            result = future.result()
+                            if result:
+                                topic, content = result
+                                success = process_topic(directory, section_name, topic, content, processor, tasks_config)
+                                if success:
+                                    print(f"✔️ Topic processed and saved successfully: {topic}")
+                                else:
+                                    print(f"❌ Failed to save topic: {topic}")
+                            else:
+                                print(f"❌ Failed to process topic")
+                        except Exception as e:
+                            print(f"❌ Error processing topic: {str(e)}")
+                    
+                    future.add_done_callback(save_callback)
+                    futures.append(future)
 
-            # Process completed topics and save results
-            topic_results = []
-            for future in as_completed(future_to_topic):
-                section_name, topic = future_to_topic[future]
-                try:
-                    result = future.result()
-                    if result:
-                        topic_results.append((section_name, result[0], result[1]))
-                    else:
-                        print(f"❌ Failed to process topic: {topic}")
-                except Exception as e:
-                    print(f"❌ Error processing topic {topic}: {str(e)}")
-
-            # Save results in parallel
-            save_futures = []
-            for section_name, topic, content in topic_results:
-                save_futures.append(
-                    executor.submit(
-                        process_topic_wrapper,
-                        (directory, section_name, topic, content, processor, tasks_config)
-                    )
-                )
-
-            # Wait for all saves to complete
-            for future in as_completed(save_futures):
-                topic, success = future.result()
-                if success:
-                    print(f"✔️ Topic processed and saved with success: {topic}")
-                else:
-                    print(f"❌ Failed to save topic: {topic}")
+            # Wait for all futures to complete
+            for future in futures:
+                future.result()  # This ensures we catch any exceptions in the main thread
 
     except Exception as e:
         print(f"❌ Failed to process directory: {directory}")
