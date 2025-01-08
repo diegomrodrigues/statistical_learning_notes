@@ -20,7 +20,7 @@ create_diagrams_task:
 
     Do not modify the original text - only add Mermaid diagram blocks where helpful.
 
-  user_message:
+  user_message: >
     Please enhance this text by adding appropriate Mermaid diagrams. Focus on creating sophisticated technical diagrams that support advanced mathematical and statistical concepts.
 
     {content}

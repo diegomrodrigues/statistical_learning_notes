@@ -48,10 +48,9 @@ def process_section_topic(directory: Path, topic: str, pdf_files: list[Path],
     ]
     
     chain = TaskChain(processor, tasks_config, steps)
-    initial_content = f"X = {topic}"
     
     try:
-        final_content = chain.run(initial_content)
+        final_content = chain.run(topic)
         if final_content:
             return topic, final_content
     except Exception as e:
