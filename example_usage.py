@@ -147,7 +147,7 @@ def process_directory(directory: Path, processor: TaskProcessor, tasks_config: d
         print(f"Error: {str(e)}")
         raise
 
-def load_tasks_config(tasks_dir: str = 'agent/tasks') -> dict:
+def load_tasks_config(tasks_dir: str = './agent/tasks') -> dict:
     """Load all YAML files from the tasks directory into a single config dictionary."""
     tasks_config = {}
     tasks_path = Path(tasks_dir)
