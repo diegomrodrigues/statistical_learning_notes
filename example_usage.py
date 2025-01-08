@@ -147,10 +147,21 @@ def process_directory(directory: Path, processor: TaskProcessor, tasks_config: d
         print(f"Error: {str(e)}")
         raise
 
+def load_tasks_config(tasks_dir: str = 'agent/tasks') -> dict:
+    """Load all YAML files from the tasks directory into a single config dictionary."""
+    tasks_config = {}
+    tasks_path = Path(tasks_dir)
+    
+    for yaml_file in tasks_path.glob('*.yaml'):
+        with open(yaml_file, 'r') as f:
+            config = yaml.safe_load(f)
+            tasks_config.update(config)
+    
+    return tasks_config
+
 def main():
-    # Load tasks configuration
-    with open('agent/tasks.yaml', 'r') as f:
-        tasks_config = yaml.safe_load(f)
+    # Load tasks configuration from all YAML files
+    tasks_config = load_tasks_config()
     
     # Initialize processor
     api_key = os.getenv("GOOGLE_API_KEY")

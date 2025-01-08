@@ -34,7 +34,7 @@ class TaskChain:
         if not self.tasks_config:
             raise ValueError("Tasks configuration cannot be empty")
         
-        required_keys = ['description']
+        required_keys = ['system_instruction', 'user_message']
         for task_name, task_config in self.tasks_config.items():
             missing_keys = [key for key in required_keys if key not in task_config]
             if missing_keys:

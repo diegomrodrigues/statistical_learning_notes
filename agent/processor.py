@@ -41,18 +41,18 @@ class TaskProcessor:
     def create_model(self, task_config: Dict[str, Any]) -> genai.GenerativeModel:
         """Create a Gemini model configured for the specific task."""
         model_config = {
-            "temperature": task_config.get("temperature", 0.7),
+            "temperature": task_config.get("temperature", 1),
             "top_p": task_config.get("top_p", 0.95),
             "top_k": task_config.get("top_k", 40),
             "max_output_tokens": task_config.get("max_output_tokens", 8192),
-            "response_mime_type": task_config.get("response_mime_type", None)
+            "response_mime_type": task_config.get("response_mime_type", "text/plain")
         }
 
         return genai.GenerativeModel(
             model_name=task_config.get("model_name", "gemini-2.0-flash-exp"),
             generation_config=model_config,
             safety_settings=self.SAFETY_SETTINGS,
-            system_instruction=task_config["description"]
+            system_instruction=task_config["system_instruction"]
         )
 
     def upload_file(self, file_path: str, mime_type: Optional[str] = None) -> Any:
@@ -96,8 +96,13 @@ class TaskProcessor:
         else:
             chat = model.start_chat()
 
+        if task_config["user_message"] and "{content}" in task_config["user_message"]:
+            user_content = task_config["user_message"].format(content=content)
+        else:
+            user_content = content
+
         # Send content and get response
-        response = chat.send_message(content)
+        response = chat.send_message(user_content)
         
         if response.text:
             print(f"✓ Successfully completed task: {task_name}")
