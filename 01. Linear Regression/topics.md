@@ -1,33 +1,5 @@
 
-*  **Multiple Regression from Simple Univariate Regression**
-     * Inner product notation and relationship to multiple regression.
-     * Orthogonal predictors and their effect on parameter estimates
-     * Orthogonalization procedures: adjustment for x0, steps for simple regression and multiple regression interpretations.
-    * Gram-Schmidt procedure: Algorithm for orthogonalization.
-
-*   **Multiple Outputs:**
-    *   Multiple linear models: Y = XB + E.
-    *   Multivariate loss: tr[(Y - XB)ᵀ(Y - XB)].
-    *   Least squares solution: B = (XᵀX)⁻¹XᵀY.
-    *   Multivariate weighted criterion: considering correlation of errors (Σ) and its result in independent regressions.
-
-*   **Subset Selection:**
-    *   Motivations: Improve prediction accuracy by reducing variance, and enhance model interpretation.
-    *   **3.3.1 Best-Subset Selection:**
-        *   Finding best model for each subset size k.
-        *   Leaps and bounds procedure
-        *   Tradeoff between bias and variance for model selection using criteria like Cross-Validation and AIC.
-    *   **3.3.2 Forward- and Backward-Stepwise Selection:**
-        *   Sequential addition (forward) or deletion (backward) of predictors.
-        *   Computational advantages for large p.
-        *   Variance-bias tradeoff and potential sub-optimality
-    *   **3.3.3 Forward-Stagewise Regression:**
-        *   Constrained approach, iteratively adding predictor that correlates most with residual with coefficients gradually adjusted.
-         *  "Slow fitting" and potential benefits in high-dimensional problems.
-    *   **3.3.4 Prostate Cancer Data Example (Continued):**
-        *   Comparing coefficients across different selection and shrinkage methods with cross-validation error estimates.
-
-*   **Shrinkage Methods:**
+*  **Shrinkage Methods:**
     *   Overview: Addressing high variability by continuous shrinkage methods
     *   **3.4.1 Ridge Regression:**
         *   Penalized residual sum of squares: minimizing ||y - Xβ||² + λ||β||².
@@ -61,17 +33,17 @@
         *  Using y for weighting inputs and iterative orthogonalization.
         *  Non-linear behavior with y, yet a similar behavior to PCR and Ridge.
 
-*   **A Comparison of the Selection and Shrinkage Methods**
+*  **A Comparison of the Selection and Shrinkage Methods**
     *   Comparison of methods using two correlated predictors by plotting coefficient profiles and discussing different shrinkage and selection behaviours.
         * The shrinkage process and their characteristics (discrete or continuous).
 
-*   **Multiple Outcome Shrinkage and Selection:**
+*  **Multiple Outcome Shrinkage and Selection:**
     *   Univariate vs. Multivariate shrinkage/selection.
     *   Canonical Correlation Analysis (CCA): maximizing correlation between linear combinations of inputs and responses.
     *   Reduced-Rank Regression: explicit model with pooled information.
     *   Shrinking canonical variates.
 
-*   **Lasso and Related Path Algorithms**
+*  **Lasso and Related Path Algorithms**
     *   **3.8.1 Incremental forward Stagewise regression**
         * New algorithm based on forward stagewise regression
         * Step size and the relation between LASSO
@@ -86,10 +58,10 @@
     *   **3.8.5 Further Properties of the Lasso**
         *   Theoretical guarantees of lasso model recovery and consistency.
 
-*   **Pathwise Coordinate Optimization**
+*  **Pathwise Coordinate Optimization**
         *   Alternative for LARS based on coordinate descent.
         *   Cyclical optimization over parameters.
 
-*   **Computational Considerations:**
+*  **Computational Considerations:**
     *   Efficiency of Cholesky/QR for least squares.
     *   LARS complexity as a comparable algorithm.

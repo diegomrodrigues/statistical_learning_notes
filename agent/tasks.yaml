@@ -1,0 +1,638 @@
+cleanup_task:
+  description: >
+    Clean up prompt artifacts and instructions while preserving:
+    1. All actual content and mathematical formulas
+    2. Technical explanations and proofs
+    3. Theorems, lemmas, and corollaries
+    4. Diagrams and image descriptions
+    5. References with actual content [^n]
+    6. Section titles and headers
+    7. Mermaid diagrams with actual content
+    8. Mathematical notation ($, $$)
+    9. Formatting (**, *, >, emojis) with technical content
+    10. Proof endings ($\blacksquare$)
+    11. Technical notes marked with emojis (⚠️❗✔️💡)
+    
+    Remove these types of artifacts:
+    - "Seu capítulo deve ser construído..."
+    - "Baseie seu capítulo exclusivamente..."
+    - "Organize o conteúdo logicamente..."
+    - "Use $ para expressões matemáticas..."
+    - "Adicione lemmas e corolários..."
+    - "Lembre-se de usar $ em vez de..."
+    - "Tenha cuidado para não se desviar..."
+    - "Exemplos técnicos devem ser apenas em Python..."
+    - "Não traduza nomes técnicos..."
+    - "Incorpore diagramas e mapas mentais..."
+    - "Continue explicando em detalhe..."
+    - "Deseja que eu continue com as próximas seções?"
+    - References to "o contexto" or "conforme indicado no contexto"
+    - Meta-instructions about formatting or structure
+    - Any text discussing how to use Mermaid, LaTeX, or image tags
+    - Instructions about how to write proofs or theorems
+    - References to [^X], [^Y], [^Z] without actual content
+    - Placeholder text like "{{ X }}" or "<X>"
+    - "Nota:" or "Importante:" sections containing only instructions
+    
+    Guidelines:
+    1. Remove only meta-instructions and prompt artifacts
+    2. Ensure the flow remains natural after removing artifacts
+    3. Keep all actual technical content intact
+    4. Preserve formatting when used for actual content
+    5. Keep proof endings but remove instructions about using them
+    6. Keep technical notes with emojis, remove instructional ones
+    7. Maintain document structure and readability
+    8. Preserve all mathematical notation and diagrams
+
+    Text content to be cleanup:
+
+  expected_output: >
+    Clean content with:
+    - All technical content preserved
+    - Mathematical notation intact
+    - Document structure maintained
+    - No prompt artifacts or instructions
+    - Natural flow and readability
+    - Preserved formatting for actual content
+    - Kept technical notes and emojis
+    - Removed all meta-instructions
+
+format_math_task:
+  description: >
+    Format all mathematical content using proper LaTeX notation:
+    1. Convert inline math expressions using $...$ syntax
+    2. Format display equations using $$...$$ syntax
+    3. Properly escape currency symbols (R\\$, \\$)
+    4. Format special characters (∈ → \in, ∑ → \sum, etc.)
+    5. Add proper subscripts and Greek letters
+    6. Format ellipsis using \ldots in math mode
+    7. Add proper spacing with \, where needed
+    8. Don't modify existing correctly formatted LaTeX
+
+    Example mathematical replacements:
+    - F(X) = σ({{Xk : k = 0, 1, ..., T}}) → $F(X) = \sigma(\{{X_k : k = 0, 1, \ldots, T\}})$
+    - {{X(t1) ∈ B1, X(t2) ∈ B2, ..., X(tk) ∈ Bk}} → $\{{X(t_1) \in B_1, X(t_2) \in B_2, \ldots, X(t_k) \in B_k\}}$
+    - P(X ≤ x) → $P(X \leq x)$
+    - E[X] = ∫ x dF(x) → $E[X] = \int x \, dF(x)$
+    - σ² = E[(X - μ)²] → $\sigma^2 = E[(X - \mu)^2]$
+    - ∑(xi - x̄)² → $\sum(x_i - \bar{{x}})^2$
+
+    ⚠️ CURRENCY FORMATTING (IMPORTANT):
+    Currency symbols must be escaped to prevent markdown conflicts!
+
+    CORRECT Currency Examples:
+    - R$ 100,00 → R\\$ 100,00
+    - $ 50.00 → \\$ 50.00
+    - The price is R$ 75,50 → The price is R\\$ 75,50
+    - Cost: $ 25.99 → Cost: \\$ 25.99
+
+    INCORRECT Currency Examples (DO NOT DO THIS):
+    ❌ R$ 100,00 (unescaped R$)
+    ❌ $ 50.00 (unescaped $)
+    ❌ R\$ 100,00 (single backslash)
+    ❌ \$ 50.00 (single backslash)
+
+    Guidelines:
+    1. Preserve all original text content
+    2. Only modify mathematical expressions and currency symbols
+    3. Use $ for inline math and $$ for display math
+    4. Format special characters: ∈ → \in, ∑ → \sum, ∫ → \int, etc.
+    5. Add proper subscripts: x1 → x_1, xn → x_n
+    6. Format Greek letters: σ → \sigma, μ → \mu
+    7. Use \ldots for ellipsis in math mode
+    8. Add proper spacing with \, where needed
+    9. Don't modify existing correctly formatted LaTeX expressions
+    10. ALWAYS escape currency symbols with double backslash:
+        - R$ → R\\$
+        - $ → \\$
+
+    Remember: Currency symbols need double backslashes to display correctly in markdown!
+  expected_output: >
+    Content with:
+    - Properly formatted LaTeX mathematical expressions
+    - Correctly escaped currency symbols
+    - Consistent notation for special characters
+    - Preserved original content structure
+    - All examples properly formatted according to guidelines
+
+create_diagrams_task:
+  description: >
+    Create Mermaid diagrams to visualize:
+    1. Mathematical relationships and dependencies
+    2. Theoretical frameworks and proofs
+    3. Algorithm flows and computational processes
+    4. Model architectures and hierarchies
+    
+    ⚠️ CRITICAL REQUIREMENTS:
+    1. ALWAYS use double quotes (" ") around ALL text in diagrams
+    2. AVOID losangles, decision nodes, and mind map structures
+    3. Use subgraphs to group related concepts
+    4. Include clear directional relationships
+    5. Break down complex formulas into components
+    6. Add diagrams inline where they best support the text
+    7. Replace any existing <image: ...> blocks with appropriate diagrams
+    8. Always start with a first overview diagram
+    9. Keep diagrams focused and not too complex
+    
+    PREFERRED DIAGRAM TYPES:
+    - Mathematical decompositions
+    - Component relationships
+    - Theoretical hierarchies
+    - Formula breakdowns
+    - Architectural structures
+    - Flowcharts and sequence diagrams
+    
+    FORMAT REQUIREMENTS:
+    ```mermaid
+    [diagram code here]
+    ```
+
+    Example structures:
+
+    ```mermaid
+    graph TD
+        subgraph "Mathematical Decomposition"
+            direction TB
+            A["Complete Formula: MSE = Bias² + Variance + ε"]
+            B["Bias Component: (E[f̂(x)] - f(x))²"]
+            C["Variance Component: E[(f̂(x) - E[f̂(x)])²]"]
+            D["Irreducible Error: var(ε)"]
+            A --> B
+            A --> C
+            A --> D
+        end
+    ```
+
+    ```mermaid
+    graph LR
+        subgraph "Ridge Regression Components"
+            direction LR
+            A["Loss Function"] --> B["RSS Term: ||y - Xβ||²"]
+            A --> C["Penalty Term: λ||β||²"]
+            B --> D["Optimization Objective"]
+            C --> D
+        end
+    ```
+
+    ```mermaid
+    graph TB
+        subgraph "Theoretical Framework"
+            A["Main Theorem"] --> B["Supporting Lemma 1"]
+            A --> C["Supporting Lemma 2"]
+            B & C --> D["Resulting Corollary"]
+            D --> E["Mathematical Implications"]
+        end
+    ```
+
+    Focus on technical accuracy and academic rigor in diagram creation,
+    using proper mathematical notation in labels. Do not modify the
+    original text - only add Mermaid diagram blocks where helpful.
+  expected_output: >
+    Content enhanced with:
+    - Mathematical relationship diagrams
+    - Theoretical framework visualizations
+    - Algorithm flow diagrams
+    - Model architecture diagrams
+    All using proper Mermaid syntax and mathematical notation
+
+generate_examples_task:
+  description: >
+    Add practical numerical examples to reinforce concepts:
+    1. Create step-by-step calculations
+    2. Provide concrete parameter values
+    3. Include comparison tables
+    4. Show practical applications
+
+    Example types to add based on linear regression topics:
+    - Bias-variance tradeoff calculations with specific datasets
+    - Ridge and Lasso regularization with different λ values
+    - Matrix calculations for least squares estimation
+    - Orthogonalization examples using Gram-Schmidt
+    - Principal Component Analysis (PCA) with actual data
+    - Cross-validation error calculations
+    - Parameter estimation and confidence intervals
+    - F-statistics and hypothesis testing examples
+    - Subset selection comparisons with real predictors
+    - Path algorithms with concrete coefficient values
+    
+    Required components:
+    1. Use Python code with numpy/scipy/sklearn/pytorch when appropriate:
+    ```python
+    import numpy as np
+    from sklearn.linear_model import LinearRegression
+    # Example code
+    ```
+
+    2. Include visualizations using Mermaid when helpful:
+    ```mermaid
+    # Diagram showing relationships
+    ```
+
+    3. Show mathematical calculations step by step:
+    $\text{{Step 1: }} \beta = (X^TX)^{{-1}}X^Ty$
+    $\text{{Step 2: }} ...$
+
+    4. Use tables for comparing methods:
+    | Method | MSE | R² | Parameters |
+    |--------|-----|----| ---------- |
+    | OLS    | ... | ...| ...        |
+    | Ridge  | ... | ...| ...        |
+
+    5. Include real-world interpretations of results
+    
+    Format examples using:
+    > 💡 **Exemplo Numérico:**
+    [Example content with actual numbers, calculations, and visualizations]
+    
+    Requirements:
+    1. Preserve all existing content
+    2. Format all mathematical expressions using LaTeX
+    3. Use realistic parameter values
+    4. Show intermediate calculation steps
+    5. Explain the intuition behind the numbers
+    6. Connect examples to theoretical concepts
+    7. Include residual analysis where appropriate
+    8. Compare different methods when relevant
+    9. Use clear variable naming conventions
+    10. Add error analysis and statistical tests
+
+    Examples should demonstrate theoretical concepts through
+    clear numerical calculations and real-world applications.
+  expected_output: >
+    Content enriched with:
+    - Practical numerical examples
+    - Step-by-step calculations
+    - Comparison tables
+    - Real-world applications
+    - Python code snippets where relevant
+    - Mathematical calculations with LaTeX
+    - Method comparisons with tables
+    - Clear explanations and interpretations
+
+parse_topics_task:
+  description: >
+    Convert the topics into a JSON format following these strict rules:
+
+    1. Topic Names (Dictionary Keys):
+      - Remove any leading numbers and dots (e.g., "01. Topic" → "Topic")
+      - Use proper spacing between words
+      - Start with a capital letter
+      - No special characters or punctuation
+      - Maximum 50 characters
+      - Only letters, numbers, and spaces allowed
+
+    2. JSON Structure:
+    {
+        "Topic Name": [ "subtopic 1", "subtopic 2", ... ],
+        "Another Topic": [ "subtopic 1", "subtopic 2", ... ],
+        ...
+    }
+
+    CORRECT Examples:
+    ✅ "Financial Markets": [ ... ]
+    ✅ "Machine Learning Fundamentals": [ ... ]
+    ✅ "Statistical Analysis": [ ... ]
+
+    INCORRECT Examples (DO NOT DO THIS):
+    ❌ "01. Financial_Markets": [ ... ]      (has number and underscore)
+    ❌ "machine learning": [ ... ]           (not capitalized)
+    ❌ "Statistical-Analysis": [ ... ]       (has hyphen)
+    ❌ "2. Data Science": [ ... ]            (has leading number)
+
+    Return only the JSON object with properly formatted topic names as keys.
+
+generate_filename_task:
+  max_output_tokens: 50
+  description: >
+    Generate a concise, descriptive filename for the given topic. 
+
+    REQUIREMENTS:
+    - Maximum 50 characters
+    - Use only letters, numbers, and spaces
+    - Start with a capital letter
+    - Be descriptive but concise
+    - Return ONLY the filename, nothing else
+    - ALWAYS include spaces between words
+    - NO special characters or punctuation
+    - NO file extensions
+
+    CORRECT Examples:
+    Input: "Hierarchical Thread Structure: Concepts of grids, blocks, and threads within CUDA"
+    Output: "Hierarchical Thread Structure"
+
+    Input: "Understanding the Bias-Variance Tradeoff in Machine Learning Models"
+    Output: "Bias Variance Tradeoff"
+
+    Input: "Ridge Regression and L2 Regularization: Mathematical Foundations & Implementation"
+    Output: "Ridge Regression and L2 Regularization"
+
+    Input: "Deep Analysis of Gradient Descent: Convergence Properties & Optimization"
+    Output: "Gradient Descent Analysis"
+
+    INCORRECT Examples (DO NOT DO THIS):
+    ❌ "HierarchicalThreadStructure"    (Missing spaces)
+    ❌ "Hierarchical_Thread_Structure"  (Contains underscores)
+    ❌ "hierarchical thread structure"  (Not capitalized)
+    ❌ "Hierarchical-Thread-Structure"  (Contains hyphens)
+    ❌ "Hierarchical Thread Structure.md"  (Contains extension)
+    ❌ "The Complete and Comprehensive Guide to Understanding Hierarchical Thread Structure in Modern CUDA Programming"  (Too long)
+
+    IMPORTANT:
+    1. Focus on SPACES between words
+    2. Keep it concise but meaningful
+    3. Return ONLY the filename
+    4. NO explanations or additional text
+    5. NO punctuation marks
+    6. ALWAYS start with a capital letter
+    7. ALWAYS use proper spacing between words
+
+
+generate_draft_task:
+  description: >
+    Você está encarregado de criar um **capítulo de livro** extenso, detalhado e avançado sobre um tópico específico no campo de **Modelos de Aprendizado Estatístico Diversos**, com foco em técnicas estatísticas e de aprendizado de máquina. Seu objetivo é produzir um guia de estudo abrangente para um profissional especializado em Estatística e Aprendizado de Máquina com conhecimento avançado em modelos estatísticos, otimização e análise de dados. Por favor, escreva o texto em português, mas sem traduzir termos técnicos e referências.
+
+    O tópico para o seu capítulo é:
+
+    <X></X>
+
+    **Diretrizes Importantes:**
+
+    1. **Baseie seu capítulo exclusivamente nas informações fornecidas no contexto.** Não introduza conhecimento externo. **Extraia o máximo de detalhes e informações do contexto para enriquecer o capítulo**, citando explicitamente as referências correspondentes.
+
+    2. **Atribua um número sequencial a cada trecho relevante do contexto.** Cite essas referências no formato [^número] ao longo do texto, de forma assertiva e consistente. Por exemplo, [^4.1] refere-se ao tópico “4.1 Introduction” do contexto. Ajuste conforme necessário para referenciar “4.2 Linear Regression of an Indicator Matrix”, “4.3 Linear Discriminant Analysis (LDA)”, etc. Quando fizer menção a subitens (4.3.1, 4.4.1, etc.), mantenha as referências de forma clara, por exemplo: [^4.3.1] ou [^4.4.1].
+
+    3. **Organize o conteúdo logicamente**, com uma introdução clara, desenvolvimento e conclusão. Use títulos e subtítulos para facilitar a navegação e estruturar o conteúdo de maneira coerente, **assegurando que cada seção aprofunde os conceitos com base no contexto fornecido**.
+
+    4. **Aprofunde-se em conceitos técnicos e matemáticos.** Forneça explicações detalhadas, análises teóricas, provas e demonstrações quando relevante. **Utilize todos os detalhes disponíveis no contexto para enriquecer as explicações**, assegurando uma compreensão profunda dos temas abordados. Não traduza nomes técnicos e teóricos.
+
+    5. **Use a seguinte formatação:**
+
+      -   Use **negrito** para conceitos principais.
+      -   Use *itálico* para citações ou paráfrases importantes.
+      -   Use caixas de destaque para informações cruciais.
+      -   Use emojis (⚠️❗✔️💡) para ênfase quando apropriado.
+
+      **Evite formatação de bullet points. Foque em criar um texto corrido e bem estruturado.**
+
+    6. **Mantenha um tom acadêmico e instrutivo**, equilibrando formalidade com clareza. Seja preciso e rigoroso nas explicações, evitando ambiguidades e **garantindo que o conteúdo reflita a complexidade e profundidade esperadas em um nível avançado**.
+
+    7. **Use $ para expressões matemáticas em linha e $$ para equações centralizadas.** Apresente as fórmulas e equações de forma clara e correta, **explicando cada termo em detalhes e sua relevância no contexto do tópico**.
+
+    8. **Inclua lemmas e corolários quando aplicável, integrando-os adequadamente no texto.**
+
+      -   Apresente lemmas e corolários em uma estrutura matemática formal, incluindo suas declarações e provas quando relevante.
+      -   Assegure que lemmas e corolários estejam logicamente conectados ao conteúdo principal e contribuam para a profundidade teórica do capítulo.
+
+    9. **Inclua seções teóricas desafiadoras ao longo do capítulo e ao final**, seguindo estas diretrizes:
+
+      a) Adicione 2-3 seções teóricas avançadas relacionadas ao conteúdo abordado ao final de cada seção principal.
+
+      b) As seções devem ser altamente relevantes, **avaliar a compreensão profunda de conceitos teóricos-chave**, podem envolver cálculos complexos e provas, e focar em análises teóricas e derivações.
+
+      c) As seções devem integrar múltiplos conceitos e exigir raciocínio teórico aprofundado.
+
+      d) **As seções devem envolver derivações teóricas, provas ou análises matemáticas complexas, incluindo lemmas e corolários quando apropriado.** Evite focar em aspectos de aplicação ou implementação. Adicione $\blacksquare$ ao final das provas.
+
+      e) **Formule as seções como se estivesse fazendo perguntas ao tema e depois respondendo teoricamente no conteúdo da seção.**
+
+    10. **Referencie o contexto de forma assertiva e consistente.** Certifique-se de que todas as informações utilizadas estão devidamente referenciadas, utilizando os números atribuídos aos tópicos disponibilizados. **As referências devem ser claras e diretas, facilitando a verificação das fontes dentro do contexto fornecido**.
+
+    11. **Incorpore diagramas e mapas mentais quando relevantes para o entendimento do conteúdo.** Use a linguagem Mermaid para diagramas ou **<imagem: descrição detalhada da imagem>** quando apropriado, apenas nas seções onde eles realmente contribuam para a compreensão.
+
+        **Instruções para incentivar a criação de diagramas e mapas mentais mais ricos:**
+
+        -   Ao utilizar Mermaid, crie diagramas complexos que representem estruturas detalhadas, como árvores de decisão para seleção de modelos, fluxos de dados em algoritmos de classificação, relações entre métodos de discriminantes ou passos de algoritmos complexos de regularização.
+        -   Utilize Mermaid para representar fórmulas matemáticas e algoritmos de forma visual, facilitando a compreensão de processos matemáticos e computacionais avançados.
+        -   Para os mapas mentais, construa representações gráficas que conectem os principais conceitos e seções do capítulo, servindo como um guia rápido para o leitor entender os conceitos de forma avançada e aprofundada.
+        -   Para as imagens descritas em **<imagem: ...>**, forneça descrições ricas que permitam visualizar gráficos complexos, como curvas de decisão, fronteiras lineares vs. não lineares, ou esquemas detalhados de análises discriminantes.
+
+        **Exemplos de como usar diagramas e mapas mentais com foco no conteúdo de classificação e regressão:**
+
+        - **Usando Mermaid para Mapas Mentais:**  
+
+          ```mermaid
+          graph TD
+            A[Classificação] --> B[Linear Discriminant Analysis]
+            A --> C[Logistic Regression]
+            A --> D[Separating Hyperplanes]
+            B --> E[Regularized Discriminant Analysis]
+          ```
+
+          **Explicação:** Este mapa mental ilustra a categorização dos principais métodos de classificação linear, conforme descrito no contexto [^4.1], [^4.2], [^4.3], [^4.4], e [^4.5].
+
+        - **Usando Mermaid para Explicar Algoritmos:**  
+
+          ```mermaid
+          stateDiagram-v2
+              [*] --> Identificacao
+              Identificacao --> Ajuste: Inicia processamento
+              Ajuste --> Funcao: Atualiza pesos
+              Funcao --> Verificacao: Calcula f(x)
+              Verificacao --> Ajuste: Não convergiu
+              Verificacao --> [*]: Convergiu
+          
+              state Identificacao: Identificação da Fronteira
+              state Ajuste: Ajuste de Parâmetros
+              state Funcao: Função Discriminante
+              state Verificacao: Verificação
+          ```
+
+          **Explicação:** Este diagrama representa de forma genérica os passos sequenciais de um método de classificação linear, como mostrado no contexto [^4.2], [^4.4].
+
+        - **Usando Mermaid para Visualizar Fórmulas Matemáticas:**  
+
+          ```mermaid
+          graph LR
+              A["Probabilidade\np(x)"]
+              B["Transformação Logit\nln(p(x)/(1-p(x)))"]
+              C["Modelo Linear\nβ₀ + β₁x₁ + β₂x₂ + ... + βₙxₙ"]
+              D["Função de Verossimilhança\nL(β) = Σ yᵢln(p(xᵢ)) + (1-yᵢ)ln(1-p(xᵢ))"]
+          
+              A -->|"Aplicar\nlogit"| B
+              B -->|"Igualar ao\nmodelo"| C
+              C -->|"Otimizar\nparâmetros"| D
+          
+              style A fill:#e3f2fd,stroke:#1976d2,stroke-width:3px
+              style B fill:#e8f5e9,stroke:#388e3c,stroke-width:3px
+              style C fill:#fff3e0,stroke:#f57c00,stroke-width:3px
+              style D fill:#fce4ec,stroke:#c2185b,stroke-width:3px
+          ```
+
+          **Explicação:** Este diagrama mostra a formulação do log-odds na Regressão Logística, conforme discutido em [^4.4].
+
+        - **Usando <imagem: descrição detalhada da imagem>:**  
+
+          <imagem: Gráfico mostrando as fronteiras de decisão resultantes de um modelo LDA vs. um modelo Logistic Regression, ilustrando semelhanças e diferenças nas fronteiras lineares>
+
+    12. **Adicione mais instruções que incentivem a escrita de um texto aprofundado e avançado:**
+
+        -   **Aprofunde cada conceito com exemplos complexos, discussões críticas e análises comparativas, sempre fundamentadas nos tópicos 4.1 a 4.5.2.**
+        -   **Integre referências cruzadas entre seções para mostrar conexões entre diferentes abordagens de classificação.**
+        -   **Inclua discussões sobre limitações, desafios atuais e possíveis direções futuras de pesquisa relacionadas ao tema.**
+        -   **Utilize linguagem técnica apropriada, mantendo precisão terminológica e rigor conceitual, com foco em métodos estatísticos, otimização e análise de dados.**
+
+    **Importante:**
+
+    -   **Comece criando a introdução e as primeiras 3 a 4 seções do capítulo.** Após isso, apresente as referências utilizadas e pergunte ao usuário se deseja continuar. Nas interações seguintes, continue adicionando novas seções, seguindo as mesmas diretrizes, até que o usuário solicite a conclusão. Certifique-se de que todo o conteúdo seja extenso, aprofundado e coerente no final.
+    -   **Instruções de marcação (HTML Comments):**  
+        - Ao final de todo o texto (quando realmente encerrar a escrita do conteúdo), insira `<!-- END DOCUMENT -->` para indicar que o modelo terminou de escrever.
+
+    Lembre-se de usar $ em vez de \( e \), e $$ em vez de \[ e \] para expressões matemáticas!
+
+    **Estruture seu capítulo da seguinte forma (incluindo as marcações de início e fim de seções conforme instruído):**
+
+    ## Escreva um Título Conciso Aqui
+
+    <imagem: proponha uma imagem relevante para o conteúdo do capítulo, por exemplo, um diagrama complexo que ilustra a relação entre as abordagens de classificação (LDA, Logistic Regression, Hyperplanes) ou um mapa mental abrangente que conecte os subtemas (4.1 a 4.5.2)>
+    Introdução
+
+    Uma introdução contextual abrangente que apresenta o tópico e sua relevância no contexto da **classificação e análise discriminante**, **extraindo informações detalhadas dos tópicos [^4.1] e [^4.2]** (ou conforme for adequado ao seu texto).
+
+    ### Conceitos Fundamentais
+
+    Desenvolva um texto contínuo que explique cada conceito fundamental, integrando-os harmoniosamente na narrativa e **referenciando o contexto apropriado**:
+
+    **Conceito 1:** Apresentação detalhada, incluindo teoria e análises matemáticas do **problema de classificação** e como o uso de métodos lineares se relaciona ao viés e variância, com exemplos práticos. **Utilize informações dos tópicos [^4.1] e [^4.2]** para enriquecer a explicação.
+
+    **Lemma 1:** Formule e demonstre um lemma relevante que suporte esse conceito, **com base nos tópicos [^4.3]**. Por exemplo, um lemma sobre a decomposição de funções discriminantes lineares ou sobre a relação entre regressão de indicadores e decisões de classe.
+
+    **Conceito 2:** Exploração aprofundada, sustentada por fundamentos teóricos e matemáticos da **Linear Discriminant Analysis (LDA)**, detalhando as suposições de normalidade, covariâncias e a construção da fronteira de decisão. **Baseie-se nos tópicos [^4.3], [^4.3.1], [^4.3.2], [^4.3.3] para aprofundar os detalhes**.
+
+    **Corolário 1:** Apresente um corolário derivado do Lemma 1 ou do próprio Conceito 2, **referenciando os tópicos [^4.3.1]** ou outros subitens pertinentes, como por exemplo a relação entre a função discriminante linear e a projeção em subespaços de menor dimensão.
+
+    **Conceito 3:** Discussão abrangente e com suporte teórico sobre a **Logistic Regression**, explicando o logit e a maximização da verossimilhança, **referenciando os tópicos [^4.4], [^4.4.1], [^4.4.2], [^4.4.3], [^4.4.4], [^4.4.5]** conforme aplicável. Detalhe as conexões com a LDA e quando cada método pode ser mais apropriado.
+
+    Utilize as formatações para destacar informações cruciais quando necessário:
+
+    > ⚠️ **Nota Importante**: Informação crítica que merece destaque. **Referência ao tópico [^4.4.1]**.
+
+    > ❗ **Ponto de Atenção**: Observação crucial sobre o uso de classes não-balanceadas. **Conforme indicado em [^4.4.2]**.
+
+    > ✔️ **Destaque**: Importante correlação entre estimativas de parâmetros em LDA e em regressão logística. **Baseado no tópico [^4.5]**.
+
+    ### Regressão Linear e Mínimos Quadrados para Classificação
+
+    <imagem: descrição detalhada ou utilize a linguagem Mermaid para diagramas ricos e relevantes, como mapas mentais que conectam conceitos ou diagramas que explicam algoritmos e fórmulas matemáticas ligados à regressão de indicadores>
+
+    **Exemplo de diagrama com Mermaid:**
+
+    ```mermaid
+    flowchart TD
+      subgraph Regressão de Indicadores
+        A[Codificar Classes] --> B[Estimar Coeficientes via LS]
+        B --> C[Aplicar Regra de Decisão]
+        C --> D[Comparar com Métodos Probabilísticos]
+      end
+    ```
+
+    **Explicação:** Este diagrama representa o fluxo do processo de regressão de indicadores e como ele se relaciona à classificação, **conforme descrito nos tópicos [1](4.2)**.
+
+    Desenvolva uma explicação aprofundada sobre como a regressão linear em matriz de indicadores pode ser aplicada à classificação e quais são suas limitações, **sempre referenciando os tópicos [2](4.1) e [1](4.2)**. Inclua provas matemáticas quando possível. Se houver menções específicas ao “masking problem” ou à influência de covariância entre classes, cite o tópico [3](4.3) para mostrar as conexões com LDA.
+
+    Inclua mapas mentais para relacionar os conceitos apresentados, facilitando a compreensão aprofundada pelo leitor.
+
+    Adicione lemmas e corolários quando aplicável:
+
+    **Lemma 2:** Declare e prove um lemma que seja fundamental para o entendimento deste tópico, **baseado em [1](4.2)**. Por exemplo, um lemma sobre a equivalência entre as projeções nos hiperplanos de decisão gerados por regressão linear e discriminantes lineares em certas condições.
+
+    **Corolário 2:** Apresente um corolário que resulte diretamente do Lemma 2, **conforme indicado em [3](4.3)**, destacando como esse resultado pode simplificar a análise do modelo.
+
+    Mencione comparações e limitações:
+
+    “Em alguns cenários, conforme apontado em [4](4.4), a regressão logística pode fornecer estimativas mais estáveis de probabilidade, enquanto a regressão de indicadores pode levar a extrapolações fora de [0,1].”
+
+    “No entanto, há situações em que a regressão de indicadores, de acordo com [1](4.2), é suficiente e até mesmo vantajosa quando o objetivo principal é a fronteira de decisão linear.”
+
+    ### Métodos de Seleção de Variáveis e Regularização em Classificação
+
+    <imagem: descrição detalhada da imagem se relevante, incluindo mapas mentais que relacionem este conceito com LDA, logistic regression e hyperplanes, conforme discussão nos tópicos [5](4.5)>
+
+    Apresente definições matemáticas detalhadas, **apoiando-se nos tópicos [6](4.4.4), [5](4.5), [7](4.5.1), [8](4.5.2)**. Por exemplo, discuta a adoção de penalizações L1 e L2 em modelos logísticos para controle de sparsity e estabilidade.
+
+    Podem ser incluídos exemplos teóricos sobre como a regularização se encaixa na formulação de uma função de custo que combine verossimilhança e termos de penalização, **como abordado em [6](4.4.4)**.
+
+    **Lemma 3:** Apresente um lemma que demonstre como a penalização L1 em classificação logística leva a coeficientes esparsos, **com base em [6](4.4.4)**.
+
+    **Prova do Lemma 3:** Desenvolva a prova detalhada, **utilizando conceitos de inferência e otimização discutidos em [9](4.4.3)**. $\blacksquare$
+
+    **Corolário 3:** Apresente um corolário que resulte do Lemma 3, destacando suas implicações para a interpretabilidade dos modelos classificatórios, **conforme indicado em [10](4.4.5)**.
+
+    Inclua anotações importantes, como:
+
+    > ⚠️ **Ponto Crucial**: L1 e L2 podem ser combinadas (Elastic Net) para aproveitar vantagens de ambos os tipos de regularização, **conforme discutido em [5](4.5)**.
+
+    ### Separating Hyperplanes e Perceptrons
+
+    Descreva em texto corrido como a ideia de maximizar a margem de separação leva ao conceito de hiperplanos ótimos, **referenciando [8](4.5.2)** para a formulação do problema de otimização e o uso do dual de Wolfe. Explique como as soluções surgem a partir de combinações lineares dos pontos de suporte. Se desejar, inclua detalhes do Perceptron de Rosenblatt e sua convergência sob condições específicas, **conforme em [7](4.5.1)**.
+
+    Apresente teoremas, lemmas ou corolários se necessário para aprofundar a análise teórica, especialmente sobre a condição de separabilidade de dados e a garantia de convergência sob hipóteses de linear separability, **utilizando [7](4.5.1)** e [8](4.5.2) para fundamentar cada afirmação.
+
+    ### Pergunta Teórica Avançada (Exemplo): Quais as diferenças fundamentais entre a formulação de LDA e a Regra de Decisão Bayesiana considerando distribuições Gaussianas com covariâncias iguais?
+
+    **Resposta:**
+
+    Estabeleça as hipóteses de cada método e mostre como, sob certas suposições, o LDA se torna equivalente à decisão Bayesiana, **conforme indicado em [3](4.3)**. Aprofunde a explicação, trazendo detalhes sobre a derivação de limites de decisão, projeções lineares e como a escolha da média e da covariância influencia o resultado.
+
+    Inclua lemmas e corolários, se necessário:
+
+    **Lemma 4:** Apresente um lemma que mostre a equivalência formal, **baseando-se em [3](4.3), [11](4.3.3)**.
+
+    **Corolário 4:** Mostre como, ao relaxar a hipótese de covariâncias iguais, surgem as fronteiras quadráticas (QDA), **conforme em [3](4.3)**.
+
+    > ⚠️ **Ponto Crucial**: A adoção ou não de covariâncias iguais impacta fortemente o tipo de fronteira de decisão (linear vs. quadrática), **conforme discutido em [12](4.3.1)**.
+
+    As perguntas devem ser altamente relevantes, **avaliar a compreensão profunda de conceitos teóricos-chave**, podem envolver derivações matemáticas e provas, e focar em análises teóricas.
+
+    ### Conclusão
+
+    Conclua o catpítulo e adicione o <!-- END DOCUMENT --> no final da sua escrita.
+
+    ### Footnotes
+
+    Após gerar as primeiras 3 a 4 seções, adicione as referências utilizadas no capítulo obtidas do contexto da seguinte forma:
+
+    [^4.1]: "Conteúdo extraído conforme escrito no contexto e utilizado no capítulo" *(Trecho de <Nome do Documento>)*
+
+    [^4.2]: "Conteúdo extraído conforme escrito no contexto e utilizado no capítulo" *(Trecho de <Nome do Documento>)*
+
+    [^4.3]: ... *[Continue numerando e citando trechos relevantes do contexto]*
+
+    **Importante:**
+
+    -   **Comece criando a introdução e as primeiras 3 a 4 seções do capítulo.** Após isso, apresente as referências utilizadas e pergunte ao usuário se deseja continuar. Nas interações seguintes, continue adicionando novas seções, seguindo as mesmas diretrizes, até que o usuário solicite a conclusão. Certifique-se de que todo o conteúdo seja extenso, aprofundado e coerente no final.
+    -   **Instruções de marcação (HTML Comments):**  
+        - Ao final de todo o texto (quando realmente encerrar a escrita do conteúdo), insira `<!-- END DOCUMENT -->` para indicar que o modelo terminou de escrever.
+
+    **Notas Finais:**
+
+    - Este modelo é um guia flexível; adapte conforme necessário mantendo-se fiel ao contexto fornecido.
+
+    - **Priorize profundidade e detalhamento, extraindo o máximo de informações dos tópicos 4.1 a 4.5.2 e referenciando-as de forma assertiva.**
+
+    - Use [^x] para todas as referências aos tópicos do contexto.
+
+    - Use $ para expressões matemáticas em linha e $$ para equações centralizadas.
+
+    - Exemplos técnicos devem ser apenas em Python e avançados, **preferencialmente utilizando bibliotecas como numpy ou similares, conforme indicado no contexto** (se houver menção a isso).
+
+    - Não traduza nomes técnicos e teóricos.
+
+    - Adicione $\blacksquare$ ao final das provas.
+
+    - **Incorpore diagramas e mapas mentais quando relevantes para o entendimento do conteúdo, utilizando a linguagem Mermaid ou <imagem: descrição detalhada da imagem>.**
+
+      **Exemplos:**
+
+      - **Ao explicar métodos de regressão para classificação, utilize Mermaid para representar o fluxo de dados e interações entre passos.**
+      - **Para ilustrar gráficos complexos, insira <imagem: Gráfico detalhado mostrando as fronteiras lineares geradas por LDA, Logistic Regression e Separating Hyperplanes>.**
+      - **Para criar mapas mentais que conectem os principais métodos e seções, utilize Mermaid para representar as relações entre LDA, logistic regression, e hyperplanes, facilitando a compreensão global do conteúdo pelo leitor.**
+
+    Lembre-se de usar $ em vez de ee, e $$ em vez de ee para expressões matemáticas!
+
+    Tenha cuidado para não se desviar do tópico proposto em <X>
+
+    **Seu capítulo deve ser construído ao longo das interações, começando com a introdução e as primeiras 3 a 4 seções, apresentando as referências utilizadas e perguntando se o usuário deseja continuar. Em cada resposta subsequente, adicione novas seções, até que o usuário solicite a conclusão. Certifique-se de que todo o conteúdo seja extenso, aprofundado e coerente no final.**
+
+    **Assim que finalizar completamente a escrita do capítulo, utilize a marcação:**
+
+    <!-- END DOCUMENT -->
