@@ -7,6 +7,7 @@ import json
 from agent.filename_handler import FilenameHandler
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import Optional
+import re
 
 def get_pdf_files(directory: Path) -> list[Path]:
     """Get all PDF files in the directory."""
@@ -21,8 +22,8 @@ def read_topics_file(directory: Path) -> str:
 
 def process_topic_wrapper(args) -> tuple[str, bool]:
     """Wrapper function for process_topic to work with ThreadPoolExecutor."""
-    directory, topic, content, processor, tasks_config = args
-    success = process_topic(directory, topic, content, processor, tasks_config)
+    directory, section_name, topic, content, processor, tasks_config = args
+    success = process_topic(directory, section_name, topic, content, processor, tasks_config)
     return topic, success
 
 def process_section_topic(directory: Path, topic: str, pdf_files: list[Path],
@@ -57,6 +58,32 @@ def process_section_topic(directory: Path, topic: str, pdf_files: list[Path],
         print(f"❌ Error processing topic {topic}: {str(e)}")
     
     return None
+
+def process_topic(directory: Path, section_name: str, topic: str, content: str, 
+                 processor: TaskProcessor, tasks_config: dict) -> bool:
+    """Process a single topic and save it to a file."""
+    try:
+        # Initialize filename handler
+        filename_handler = FilenameHandler(processor, tasks_config)
+
+        # Create or get section directory
+        section_dir = filename_handler.create_section_directory(directory, section_name)
+        
+        # Generate filename within the section directory
+        result = filename_handler.generate_filename(section_dir, topic)
+        
+        if result.exists:
+            print(f"⚠️ Similar topic already exists: {result.filename}")
+            return True
+        
+        # Save content to file
+        result.path.write_text(content, encoding='utf-8')
+        print(f"✔️ Saved topic to: {result.filename}")
+        return True
+        
+    except Exception as e:
+        print(f"❌ Failed to process topic: {str(e)}")
+        return False
 
 def process_directory(directory: Path, processor: TaskProcessor, tasks_config: dict, max_workers: int = 3) -> None:
     """Process a single directory with its topics using parallel processing."""
@@ -93,16 +120,16 @@ def process_directory(directory: Path, processor: TaskProcessor, tasks_config: d
                         processor,
                         tasks_config
                     )
-                    future_to_topic[future] = topic
+                    future_to_topic[future] = (section_name, topic)
 
             # Process completed topics and save results
             topic_results = []
             for future in as_completed(future_to_topic):
-                topic = future_to_topic[future]
+                section_name, topic = future_to_topic[future]
                 try:
                     result = future.result()
                     if result:
-                        topic_results.append(result)
+                        topic_results.append((section_name, result[0], result[1]))
                     else:
                         print(f"❌ Failed to process topic: {topic}")
                 except Exception as e:
@@ -110,11 +137,11 @@ def process_directory(directory: Path, processor: TaskProcessor, tasks_config: d
 
             # Save results in parallel
             save_futures = []
-            for topic, content in topic_results:
+            for section_name, topic, content in topic_results:
                 save_futures.append(
                     executor.submit(
                         process_topic_wrapper,
-                        (directory, topic, content, processor, tasks_config)
+                        (directory, section_name, topic, content, processor, tasks_config)
                     )
                 )
 
@@ -130,29 +157,6 @@ def process_directory(directory: Path, processor: TaskProcessor, tasks_config: d
         print(f"❌ Failed to process directory: {directory}")
         print(f"Error: {str(e)}")
         raise
-
-def process_topic(directory: Path, topic: str, content: str, 
-                 processor: TaskProcessor, tasks_config: dict) -> bool:
-    """Process a single topic and save it to a file."""
-    try:
-        # Initialize filename handler
-        filename_handler = FilenameHandler(processor, tasks_config)
-        
-        # Generate filename
-        result = filename_handler.generate_filename(directory, topic)
-        
-        if result.exists:
-            print(f"⚠️ Similar topic already exists: {result.filename}")
-            return True
-        
-        # Save content to file
-        result.path.write_text(content, encoding='utf-8')
-        print(f"✔️ Saved topic to: {result.filename}")
-        return True
-        
-    except Exception as e:
-        print(f"❌ Failed to process topic: {str(e)}")
-        return False
 
 def main():
     # Load tasks configuration

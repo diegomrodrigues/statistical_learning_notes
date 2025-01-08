@@ -1,6 +1,7 @@
 from pathlib import Path
 from typing import Set
 from dataclasses import dataclass
+import re
 from .chain import TaskChain, ChainStep
 from .processor import TaskProcessor
 
@@ -31,6 +32,43 @@ class FilenameHandler:
             if existing_name.lower() == suggested_name.lower():
                 return existing_file.name
         return False
+
+    def create_section_directory(self, base_dir: Path, section_name: str) -> Path:
+        """Create a section directory with proper sequential numbering."""
+        # Remove any existing number prefixes from the input section name
+        section_name = re.sub(r'^\d+\.\s*', '', section_name)
+        clean_section_name = section_name.lower().strip()
+        
+        # Get existing section directories
+        existing_dirs = [d for d in base_dir.iterdir() if d.is_dir()]
+        
+        # First check for existing similar sections
+        for existing_dir in existing_dirs:
+            # Remove the number prefix and clean up for comparison
+            existing_name = re.sub(r'^\d+\.\s*', '', existing_dir.name).lower().strip()
+            if existing_name == clean_section_name:
+                print(f"✓ Using existing section: {existing_dir.name}")
+                return existing_dir
+        
+        # If no existing section found, create new one with next available number
+        existing_numbers = {
+            int(d.name.split('.')[0]) 
+            for d in existing_dirs 
+            if d.name[0].isdigit()
+        }
+        
+        next_num = 1
+        while next_num in existing_numbers:
+            next_num += 1
+        
+        section_dir_name = f"{next_num:02d}. {section_name}"
+        section_dir = base_dir / section_dir_name
+        
+        if not section_dir.exists():
+            section_dir.mkdir(parents=True)
+            print(f"✓ Created new section: {section_dir_name}")
+            
+        return section_dir
 
     def generate_filename(self, directory: Path, topic: str) -> FilenameResult:
         """Generate a filename for the topic with proper numbering."""
