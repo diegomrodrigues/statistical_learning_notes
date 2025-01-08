@@ -172,11 +172,12 @@ def main():
     # Define base directory and target folders
     base_dir = Path("/content/statistical_learning_notes")
     target_folders = [
+        "01. Linear Regression",
         "08. Random Forests"
     ]
     
     # Add max_workers configuration
-    max_workers = 3  # Configurable number of parallel workers
+    max_workers = 4  # Configurable number of parallel workers
     
     # Process each target directory
     for folder in target_folders:
