@@ -57,7 +57,7 @@ class TaskProcessor:
 
     def upload_file(self, file_path: str, mime_type: Optional[str] = None) -> Any:
         """Upload a file to Gemini."""
-        print(f"\nUploading file: {file_path}")
+        print(f"Uploading file: {file_path}")
         file = genai.upload_file(file_path, mime_type=mime_type)
         print(f"✓ Uploaded file '{file.display_name}' as: {file.uri}")
         return file
@@ -79,7 +79,7 @@ class TaskProcessor:
     def process_task(self, task_name: str, task_config: Dict[str, Any], content: str, 
                     files: Optional[List[Any]] = None) -> Optional[str]:
         """Process a single task using the Gemini API."""
-        print(f"\nProcessing task: {task_name}")
+        print(f"Processing task: {task_name}")
         
         # Create model for this specific task
         model = self.create_model(task_config)

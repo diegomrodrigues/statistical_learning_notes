@@ -96,7 +96,7 @@ class TaskChain:
     
     def run(self, initial_content: str) -> Optional[str]:
         """Run all steps in the chain sequentially."""
-        print("\n🔄 Starting task chain execution...")
+        print("🔄 Starting task chain execution...")
         
         current_content = initial_content
         for step in self.steps:
@@ -106,5 +106,5 @@ class TaskChain:
             else:
                 raise Exception(f"❌ Chain failed at step: {step.name}")
         
-        print("\n✨ Task chain completed successfully")
+        print("✨ Task chain completed successfully")
         return current_content 

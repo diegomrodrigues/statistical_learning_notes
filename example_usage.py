@@ -5,6 +5,8 @@ from agent.processor import TaskProcessor
 from agent.chain import TaskChain, ChainStep
 import json
 from agent.filename_handler import FilenameHandler
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from typing import Optional
 
 def get_pdf_files(directory: Path) -> list[Path]:
     """Get all PDF files in the directory."""
@@ -17,29 +19,57 @@ def read_topics_file(directory: Path) -> str:
         return topics_file.read_text(encoding='utf-8')
     raise FileNotFoundError("topics.md not found in the specified directory")
 
-def process_directory(directory: Path, processor: TaskProcessor, tasks_config: dict) -> None:
-    """Process a single directory with its topics."""
+def process_topic_wrapper(args) -> tuple[str, bool]:
+    """Wrapper function for process_topic to work with ThreadPoolExecutor."""
+    directory, topic, content, processor, tasks_config = args
+    success = process_topic(directory, topic, content, processor, tasks_config)
+    return topic, success
+
+def process_section_topic(directory: Path, topic: str, pdf_files: list[Path],
+                         processor: TaskProcessor, tasks_config: dict) -> Optional[tuple[str, str]]:
+    """Process a single topic within a section."""
+    print(f"Processing topic: {topic[:50]}...")
+    steps = [
+        ChainStep(
+            name="Generate Initial Draft",
+            tasks=["generate_draft_task"],
+            input_files=pdf_files
+        ),
+        ChainStep(
+            name="Review and Enhance",
+            tasks=[
+                "cleanup_task",
+                "generate_examples_task",
+                "create_diagrams_task",
+                "format_math_task"
+            ]
+        )
+    ]
+    
+    chain = TaskChain(processor, tasks_config, steps)
+    initial_content = f"X = {topic}"
+    
+    try:
+        final_content = chain.run(initial_content)
+        if final_content:
+            return topic, final_content
+    except Exception as e:
+        print(f"❌ Error processing topic {topic}: {str(e)}")
+    
+    return None
+
+def process_directory(directory: Path, processor: TaskProcessor, tasks_config: dict, max_workers: int = 3) -> None:
+    """Process a single directory with its topics using parallel processing."""
     print(f"\nProcessing directory: {directory}")
     
-    # Get PDF files
     pdf_files = get_pdf_files(directory)
     if not pdf_files:
         print("No PDF files found in the directory, skipping...")
         return
 
     try:
-        # Read topics content
         topics_content = read_topics_file(directory)
-        
-        # First chain: Generate structured topics
-        topics_steps = [
-            ChainStep(
-                name="Parse Topics",
-                tasks=["parse_topics_task"],
-                expect_json=True
-            )
-        ]
-        
+        topics_steps = [ChainStep(name="Parse Topics", tasks=["parse_topics_task"], expect_json=True)]
         topics_chain = TaskChain(processor, tasks_config, topics_steps)
         topics_result = topics_chain.run(topics_content)
         
@@ -48,51 +78,53 @@ def process_directory(directory: Path, processor: TaskProcessor, tasks_config: d
             
         topics = json.loads(topics_result)
         
-        # Second chain: Process each topic
-        for section_name, section_topics in topics.items():
-            print(f"\nProcessing section: {section_name}")
-            
-            for topic in section_topics:                    
-                # Define the processing steps for this topic
-                steps = [
-                    ChainStep(
-                        name="Generate Initial Draft",
-                        tasks=["generate_draft_task"],
-                        input_files=pdf_files
-                    ),
-                    ChainStep(
-                        name="Review and Enhance",
-                        tasks=[
-                            "cleanup_task",
-                            "generate_examples_task",
-                            "create_diagrams_task",
-                            "format_math_task"
-                        ]
+        # Process sections in parallel
+        with ThreadPoolExecutor(max_workers=max_workers) as executor:
+            # First, submit all topic processing tasks
+            future_to_topic = {}
+            for section_name, section_topics in topics.items():
+                print(f"\nSubmitting section: {section_name}")
+                for topic in section_topics:
+                    future = executor.submit(
+                        process_section_topic,
+                        directory,
+                        topic,
+                        pdf_files,
+                        processor,
+                        tasks_config
                     )
-                ]
-                
-                # Initialize chain
-                chain = TaskChain(processor, tasks_config, steps)
-                
-                # Run the chain for this topic
-                initial_content = f"X = {topic}"
+                    future_to_topic[future] = topic
+
+            # Process completed topics and save results
+            topic_results = []
+            for future in as_completed(future_to_topic):
+                topic = future_to_topic[future]
                 try:
-                    final_content = chain.run(initial_content)
-                    if final_content:
-                        success = process_topic(
-                            directory=directory,
-                            topic=topic,
-                            content=final_content,
-                            processor=processor,
-                            tasks_config=tasks_config
-                        )
-                        if success:
-                            print(f"✔️ Topic processed with success: {topic}")
+                    result = future.result()
+                    if result:
+                        topic_results.append(result)
                     else:
                         print(f"❌ Failed to process topic: {topic}")
                 except Exception as e:
                     print(f"❌ Error processing topic {topic}: {str(e)}")
-                    continue
+
+            # Save results in parallel
+            save_futures = []
+            for topic, content in topic_results:
+                save_futures.append(
+                    executor.submit(
+                        process_topic_wrapper,
+                        (directory, topic, content, processor, tasks_config)
+                    )
+                )
+
+            # Wait for all saves to complete
+            for future in as_completed(save_futures):
+                topic, success = future.result()
+                if success:
+                    print(f"✔️ Topic processed and saved with success: {topic}")
+                else:
+                    print(f"❌ Failed to save topic: {topic}")
 
     except Exception as e:
         print(f"❌ Failed to process directory: {directory}")
@@ -139,11 +171,14 @@ def main():
         "08. Random Forests"
     ]
     
+    # Add max_workers configuration
+    max_workers = 3  # Configurable number of parallel workers
+    
     # Process each target directory
     for folder in target_folders:
         directory = base_dir / folder
         if directory.exists():
-            process_directory(directory, processor, tasks_config)
+            process_directory(directory, processor, tasks_config, max_workers)
         else:
             print(f"Directory not found: {directory}")
 
