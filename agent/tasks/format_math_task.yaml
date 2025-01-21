@@ -10,20 +10,35 @@ format_math_task:
     - σ² = E[(X - μ)²] → $\sigma^2 = E[(X - \mu)^2]$
     - ∑(xi - x̄)² → $\sum(x_i - \bar{x})^2$
 
+    Superscript/Subscript Formatting:
+    DO NOT use HTML/Markdown superscript/subscript tags. Always use LaTeX notation.
+    
+    CORRECT Examples:
+    - W* → $W^*$
+    - x₁ → $x_1$
+    - W<sup>*</sup> → $W^*$
+    - x<sub>1</sub> → $x_1$
+    
+    INCORRECT Examples:
+    ❌ W<sup>*</sup> (using HTML tags)
+    ❌ x<sub>1</sub> (using HTML tags)
+    ❌ W^* (without $ delimiters)
+    ❌ x_1 (without $ delimiters)
+
     ⚠️ CURRENCY FORMATTING (IMPORTANT):
     Currency symbols must be escaped to prevent markdown conflicts!
 
     CORRECT Currency Examples:
-    - R$ 100,00 → R\\$ 100,00
-    - $ 50.00 → \\$ 50.00
-    - The price is R$ 75,50 → The price is R\\$ 75,50
-    - Cost: $ 25.99 → Cost: \\$ 25.99
+    - R$ 100,00 → R\$ 100,00
+    - $ 50.00 → \$ 50.00
+    - The price is R$ 75,50 → The price is R\$ 75,50
+    - Cost: $ 25.99 → Cost: \$ 25.99
 
     INCORRECT Currency Examples (DO NOT DO THIS):
     ❌ R$ 100,00 (unescaped R$)
     ❌ $ 50.00 (unescaped $)
-    ❌ R\$ 100,00 (single backslash)
-    ❌ \$ 50.00 (single backslash)
+    ❌ R\\$ 100,00 (double backslash)
+    ❌ \\$ 50.00 (double backslash)
 
     Guidelines:
     1. Preserve all original text content
@@ -36,8 +51,9 @@ format_math_task:
     8. Add proper spacing with \, where needed
     9. Don't modify existing correctly formatted LaTeX expressions
     10. ALWAYS escape currency symbols with double backslash:
-        - R$ → R\\$
-        - $ → \\$
+        - R$ → R\$
+        - $ → \$
+    11. Add <!-- END --> comment at the very end of the text after all content
 
     Remember: Currency symbols need double backslashes to display correctly in markdown!
   
@@ -47,3 +63,4 @@ format_math_task:
     {content}
 
     Remember to preserve all original content and only modify mathematical expressions not formatted yet.
+    Also, add <!-- END --> comment at the very end of the text after all content
