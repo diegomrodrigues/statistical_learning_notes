@@ -35,12 +35,11 @@ class DirectoryProcessor:
                     perspectives, 
                     num_topics, 
                     jsons_per_perspective, 
-                    num_consolidation_steps, 
-                    max_previous_topics
+                    num_consolidation_steps
                 )
             
             # Then process the topics
-            self.process_directory(directory, max_workers)
+            self.process_directory(directory, max_workers, max_previous_topics)
             
         except Exception as e:
             print(f"❌ Failed to process directory: {directory}")

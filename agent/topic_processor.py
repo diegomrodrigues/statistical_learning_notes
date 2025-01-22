@@ -22,8 +22,13 @@ class TopicProcessor:
         self.context = context
         self.filename_handler = FilenameHandler(processor, tasks_config)
 
-    def process_section(self, directory: Path, section_name: str, section_topics: List[str],
-                       pdf_files: List[Path], max_previous_topics: int = 5) -> None:
+    def process_section(self, 
+        directory: Path, 
+        section_name: str, 
+        section_topics: List[str],
+        pdf_files: List[Path], 
+        max_previous_topics: int = 5
+    ) -> None:
         """
         Process all topics within a section sequentially.
         
