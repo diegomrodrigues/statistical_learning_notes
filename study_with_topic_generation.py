@@ -19,6 +19,13 @@ TARGET_FOLDERS = [
 
 EXCLUDED_FOLDERS = []
 
+# Processing parameters
+NUM_TOPICS = None
+MAX_WORKERS = 3
+JSONS_PER_PERSPECTIVE = 2
+NUM_CONSOLIDATION_STEPS = 3
+MAX_PREVIOUS_TOPICS = 5
+
 def load_tasks_config(tasks_dir: str = './agent/tasks') -> dict:
     """Load all YAML files from the tasks directory into a single config dictionary."""
     tasks_config = {}
@@ -61,7 +68,6 @@ def main():
     # Define base directory and settings
     base_dir = Path(BASE_DIR)
     target_folders = get_numbered_folders(base_dir)
-    max_workers = 2
     
     # Process each target directory
     for folder in target_folders:
@@ -70,8 +76,11 @@ def main():
             directory_processor.process_with_topics(
                 directory,
                 perspectives=PERSPECTIVES,
-                num_topics=len(PERSPECTIVES),
-                max_workers=max_workers
+                num_topics=NUM_TOPICS or len(PERSPECTIVES),
+                max_workers=MAX_WORKERS,
+                jsons_per_perspective=JSONS_PER_PERSPECTIVE,
+                num_consolidation_steps=NUM_CONSOLIDATION_STEPS,
+                max_previous_topics=MAX_PREVIOUS_TOPICS
             )
         else:
             print(f"Directory not found: {directory}")
