@@ -1,0 +1,88 @@
+{
+  "topics": [
+    {
+      "topic": "Kernel Smoothing Methods",
+      "sub_topics": [
+        "Kernel smoothing is a class of regression techniques that estimates the regression function f(X) by fitting simple models locally at each query point x\u2080. This involves using observations close to the target point, achieved through a weighting function or kernel K\u03bb(x\u2080, xi) that assigns weights based on distance, with \u03bb dictating the neighborhood's width. Kernel methods primarily serve as a device for localization, differing from their use in regularized nonlinear modeling, where kernels compute an inner product in a high-dimensional feature space. These methods require minimal training, with most computations performed at evaluation time.",
+        "One-dimensional kernel smoothers estimate the regression function E(Y|X = x) by computing a weighted average in a neighborhood of the target point, assigning weights that decrease smoothly with distance to avoid discontinuity. The Nadaraya-Watson kernel-weighted average is a common method that achieves this continuity. The Epanechnikov quadratic kernel is used to give more weight to points closer to the target, resulting in a continuous and smooth fitted function, where points enter the neighborhood with weight zero and their contribution increases gradually. One-dimensional kernel smoothers can also use the k-nearest-neighbor average as an estimate of the regression function, relaxing the definition of conditional expectation.",
+        "Local linear regression addresses the bias of locally-weighted averages, especially at domain boundaries, by fitting straight lines rather than constants locally, removing the bias to first order. This involves solving a separate weighted least squares problem at each target point x\u2080, minimizing \u03a3i K\u03bb(x\u2080, xi)[yi - \u03b1(x\u2080) - \u03b2(x\u2080)xi]\u00b2. The estimate is linear in y: f(x\u2080) = \u03a3i li(x\u2080)yi, where li(x\u2080) combines the kernel and least squares operations. This approach effectively corrects for asymmetry in the kernel and is sometimes referred to as automatic kernel carpentry.",
+        "Local polynomial regression extends local linear fits by fitting local polynomial fits of any degree d, where the bias will only have components of degree d+1 and higher, but with a price of increased variance. This involves minimizing \u03a3i K\u03bb(x\u2080, xi)[yi - \u03b1(x\u2080) - \u03a3j \u03b2j(x\u2080)xi^j]\u00b2, reducing bias further but potentially increasing variance. Asymptotic analysis suggests odd-degree polynomials dominate even-degree ones.",
+        "Selecting the width of the kernel (parameter \u03bb) involves balancing bias and variance. A narrow window results in high variance and low bias, while a wide window results in low variance and high bias. Larger \u03bb implies lower variance but higher bias, while smaller \u03bb implies higher variance but lower bias. Metric window widths maintain constant bias but have variance inversely proportional to local density, whereas nearest-neighbor window widths keep variance constant but have bias varying inversely with local density. Cross-validation techniques, such as leave-one-out, generalized, Cp, or k-fold, are used to determine the optimal smoothing parameter. The effective degrees of freedom, defined as trace(Sx), are used to calibrate the amount of smoothing, where Sx is the smoother matrix built up from the equivalent kernels.",
+        "Kernel smoothing and local regression generalize to two or more dimensions, fitting a constant or hyperplane locally with weights supplied by a p-dimensional kernel, often a radial function like the Epanechnikov or tri-cube kernel. Boundary effects are exacerbated in higher dimensions, making boundary correction via local polynomial regression crucial. Standardizing predictors to unit standard deviation is crucial due to the Euclidean norm's sensitivity to coordinate units.",
+        "Structured kernels modify the kernel by using a positive semidefinite matrix A to weigh different coordinates, downgrading or omitting entire coordinates or directions by imposing restrictions on A. This can be expressed as K\u03bb,A(x\u2080, x) = D((x - x\u2080)\u1d40A(x - x\u2080) / \u03bb\u00b2), where the covariance function of predictors can tailor A to focus less on high-frequency contrasts. Structured regression functions, such as additive models and ANOVA decompositions, reduce dimensionality by eliminating higher-order interaction terms and using iterative backfitting algorithms.",
+        "Mixture models, particularly Gaussian mixture models (GMMs), are useful for density estimation and can be viewed as a kind of kernel method. A GMM is formed with mixing proportions and each Gaussian density has a mean and covariance matrix, represented as f(x) = \u03a3m \u03b1m \u03c6(x; \u03bcm, \u03a3m). These parameters are typically fit by maximum likelihood using the EM algorithm. When covariance matrices are constrained to be scalar, the model has the form of a radial basis expansion.",
+        "The computational cost to fit at a single observation is O(N) flops, but popular implementations of local regression use triangulation schemes to reduce the computations. They compute the fit exactly at M carefully chosen locations (O(NM)), and then use blending techniques to interpolate the fit elsewhere (O(M) per evaluation). Smoothing parameters are typically determined offline using cross-validation, incurring a cost of O(N\u00b2).",
+        "The curse of dimensionality limits the effectiveness of local regression in high dimensions, as maintaining both localness and a sizable neighborhood sample requires exponentially increasing the total sample size."
+      ]
+    },
+    {
+      "topic": "Radial Basis Functions",
+      "sub_topics": [
+        "Radial basis functions (RBFs) combine kernel functions with basis expansions, treating the kernel functions K\u03bb(\u03be, x) as basis functions, leading to models of the form f(x) = \u03a3 K\u03bb(\u03bej, x) \u03b2j, where each basis element is indexed by a location or prototype parameter \u03bej and a scale parameter \u03bbj. A popular choice for the kernel in RBF networks is the standard Gaussian density function.",
+        "Learning the parameters {\u03bej, \u03bbj, \u03b2j} can be approached by optimizing the sum-of-squares with respect to all the parameters, estimating the {\u03bbj, \u03bej} separately from the \u03b2j, or using clustering methods to locate the prototypes \u03bej and treat \u03bbj = \u03bb as a hyper-parameter. This optimization often results in a nonconvex optimization problem similar to neural networks.",
+        "Renormalized radial basis functions, hj(x) = D(||x - \u03be||/\u03bb) / \u03a3 D(||x - \u03bek||/\u03bb), address the issue of creating 'holes' in regions of input space by normalizing the basis functions, ensuring that the sum of the basis functions is always 1. The Nadaraya-Watson kernel regression estimator can be viewed as an expansion in renormalized radial basis functions."
+      ]
+    },
+    {
+      "topic": "Mixture Models for Density Estimation and Classification",
+      "sub_topics": [
+        "Mixture models represent densities as a sum of component densities, such as Gaussian mixture models (GMMs), providing a flexible way to model complex distributions. The Gaussian mixture model has the form f(x) = \u03a3 \u03b1m \u03c6(x; \u03bcm, \u03a3m), with mixing proportions \u03b1m and Gaussian densities with mean \u03bcm and covariance matrix \u03a3m. The parameters are usually fit by maximum likelihood, using the EM algorithm.",
+        "The parameters of a GMM are typically estimated using maximum likelihood via the Expectation-Maximization (EM) algorithm. Special cases arise when the covariance matrices are constrained to be scalar or fixed. If the covariance matrices are constrained to be scalar, then the mixture model has the form of a radial basis expansion, and if in addition \u03c3m = \u03c3 > 0 is fixed, and M\u2192 N, then the maximum likelihood estimate approaches the kernel density estimate.",
+        "Mixture models can be used for classification by fitting separate mixture densities in each class, leading to flexible models for estimating the posterior probabilities Pr(G|X). Using Bayes' theorem with separate mixture densities in each class leads to flexible models for Pr(G|X), allowing for classification based on the probability that an observation belongs to a component. The mixture model provides an estimate of the probability that observation i belongs to component m, and can be used for classification by thresholding each value rij and comparing the classification of each observation by CHD and the mixture model."
+      ]
+    },
+    {
+      "topic": "Local Regression in Higher Dimensions",
+      "sub_topics": [
+        "Local regression generalizes to higher dimensions by fitting hyperplanes locally using weighted least squares, with weights determined by a p-dimensional kernel. Kernel smoothing and local regression generalize to higher dimensions by fitting a constant or hyperplane locally, using p-dimensional kernels and weighted least squares, with a radial kernel being a typical choice.",
+        "Boundary effects are exacerbated in higher dimensions due to the increased fraction of points near the boundary, making boundary correction via local polynomial regression crucial. Standardizing predictors to unit standard deviation is crucial due to the Euclidean norm\u2019s sensitivity to coordinate units.",
+        "The curse of dimensionality limits the effectiveness of local regression in high dimensions, as maintaining both localness and a sizable neighborhood sample requires exponentially increasing the total sample size.",
+        "Structured kernels modify the standard spherical kernel by incorporating a positive semidefinite matrix A to weigh coordinates, allowing for downgrading or omitting entire coordinates or directions. Structured regression functions, such as additive models and ANOVA decompositions, reduce dimensionality by eliminating higher-order interaction terms and using iterative backfitting algorithms.",
+        "Varying coefficient models divide predictors into sets, allowing coefficients of a linear model to vary with one set of predictors, fitted using locally weighted least squares."
+      ]
+    },
+    {
+      "topic": "Kernel Width Selection",
+      "sub_topics": [
+        "The width parameter \u03bb in kernels controls the size of the local neighborhood and is crucial for balancing bias and variance in kernel smoothing methods. The smoothing parameter \u03bb controls the width of the kernel, influencing the bias-variance tradeoff.",
+        "A narrow window results in high variance and low bias, as the estimate is based on few observations close to the target point, while a wide window results in low variance and high bias due to averaging over more distant points.",
+        "As the width approaches zero, local regression estimates approach a piecewise-linear function interpolating the training data; as it approaches infinity, the fit approaches the global linear least-squares fit.",
+        "Metric window widths maintain constant bias but variance is inversely proportional to local density; nearest-neighbor window widths exhibit the opposite behavior, with constant variance and bias varying inversely with local density.",
+        "Selecting the regularization parameter can be done using leave-one-out cross-validation, generalized cross-validation (Cp), or k-fold cross-validation, with the effective degrees of freedom defined as trace(Sx)."
+      ]
+    },
+    {
+      "topic": "Kernel Density Estimation and Classification",
+      "sub_topics": [
+        "Kernel density estimation estimates the probability density function by averaging kernel functions centered at each data point, with the Parzen estimate being a smooth version of this. Kernel density estimation estimates the probability density fx at a point x0 by counting observations close to x0 with weights that decrease with distance, using a smoothing parameter to control the width of the kernel.",
+        "The Parzen density estimate is equivalent to convolving the sample empirical distribution with the kernel function, effectively smoothing the distribution by adding independent noise to each observation. Parzen density estimate is the equivalent of the local average, and improvements have been proposed along the lines of local regression, and in IR the natural generalization of the Gaussian density estimate amounts to using the Gaussian product kernel.",
+        "Kernel density classification uses Bayes' theorem with nonparametric density estimates to classify data points, estimating class densities separately and using class priors to compute posterior probabilities. Kernel density classification uses nonparametric density estimates for classification by fitting nonparametric density estimates f(X) separately in each of the classes and using Bayes' theorem.",
+        "The Naive Bayes classifier simplifies density estimation by assuming feature independence given the class, allowing for separate estimation of one-dimensional marginal densities. Despite its simplifying assumptions, the Naive Bayes classifier often performs well due to its savings in variance, which can outweigh the bias introduced by the independence assumption."
+      ]
+    },
+    {
+      "topic": "Computational Considerations",
+      "sub_topics": [
+        "Kernel methods are memory-based, requiring the entire training dataset at evaluation time, posing scalability challenges for real-time applications. The model is the entire training data set, and the fitting is done at evaluation or prediction time. The computational cost for fitting at a single observation x0 is O(N) flops, where N is the dataset size, except in oversimplified cases (such as square kernels).",
+        "Smoothing parameters in kernel methods are typically determined offline using cross-validation, incurring a cost of O(N^2) flops. The smoothing parameter(s) \u03bb for kernel methods are typically determined off-line, for example using cross-validation, at a cost of O(N2) flops.",
+        "Implementations like LOESS use triangulation schemes to reduce computation by computing exact fits at M carefully chosen locations (O(NM)) and interpolating elsewhere (O(M) per evaluation). Basis function methods, by comparison, cost O(M) for one evaluation and typically M ~ O(log N). Basis function methods have an initial cost of at least O(NM^2 + M^3)."
+      ]
+    },
+    {
+      "topic": "Structured Local Regression Models",
+      "sub_topics": [
+        "Structured kernels modify the kernel by using a positive semidefinite matrix A to weigh different coordinates, allowing downgrading or omitting entire coordinates or directions by imposing restrictions on A.",
+        "Additive models assume only main effect terms, second-order models have terms with interactions of order at most two, and so on, and can be fit using iterative backfitting algorithms.",
+        "Varying coefficient models divide predictors into a set (X1, X2, ..., Xq) and allow the coefficients to vary with the remaining predictors, fit by locally weighted least squares."
+      ]
+    },
+    {
+      "topic": "Local Likelihood and Other Models",
+      "sub_topics": [
+        "Local likelihood models associate a parameter \u03b8i with each observation yi, linear in the covariate(s) xi, and base inference for \u03b2 on the log-likelihood local to x0, allowing more flexible modeling of \u03b8(X).",
+        "Autoregressive time series models of order k have the form yt = \u03b20 + \u03b21yt-1 + \u03b22yt-2 + \u00b7\u00b7\u00b7 + \u03b2kyt-k + \u03b5t, where the model can vary according to the short-term history of the series by fitting with local least squares with a kernel K(x0, xt).",
+        "Generalized linear models involve covariates in a linear fashion, and local likelihood allows a relaxation from a globally linear model to one that is locally linear, by computing parameter estimates and their standard errors locally as well."
+      ]
+    }
+  ]
+}

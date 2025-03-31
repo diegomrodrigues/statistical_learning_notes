@@ -1,0 +1,110 @@
+{
+  "topics": [
+    {
+      "topic": "Linear Regression Models and Least Squares",
+      "sub_topics": [
+        "Linear regression models predict a real-valued output Y based on a linear combination of input variables X, where the coefficients \\u03b2 are unknown parameters to be estimated. These parameters or coefficients (\\u03b2j) are estimated from quantitative inputs, transformations of inputs, basis expansions, dummy coding of qualitative inputs and interactions between variables.",
+        "The method of least squares estimates the parameters \\u03b2 by minimizing the residual sum of squares (RSS), which measures the average lack of fit between the predicted and observed values. The residual sum-of-squares can be expressed as RSS(\\u03b2) = (y \\u2013 X\\u03b2)T (y \\u2013 X\\u03b2), a quadratic function minimized by differentiating with respect to \\u03b2, resulting in the normal equations XTX\\u03b2 = XTy.",
+        "The least squares estimate is given by \\u03b2 = (XTX)-1XTy, assuming X has full column rank, and XTX is positive definite; otherwise, regularization techniques are needed. Rank deficiencies in X can occur due to perfectly correlated inputs or redundant coding of qualitative inputs, necessitating recoding, dropping redundant columns, or regularization.",
+        "The hat matrix H = X(XTX)-1XT, also known as the projection matrix, computes the orthogonal projection of y onto the column space of X, and the fitted values \\u0177 = X\\u03b2 are the projection of y onto the column space of X, representing the vector of least squares predictions.",
+        "Assuming uncorrelated observations yi with constant variance \\u03c3\\u00b2 and fixed xi, the variance-covariance matrix of the least squares parameter estimates is Var(\\u03b2) = (XTX)-1\\u03c3\\u00b2. Under the assumption of a Gaussian error term \\u03b5 ~ N(0, \\u03c3\\u00b2), the least squares estimator \\u03b2 follows a multivariate normal distribution \\u03b2 ~ N(\\u03b2, (XTX)-1\\u03c3\\u00b2).",
+        "To test the hypothesis that a particular coefficient \\u03b2j = 0, the standardized coefficient or Z-score zj = \\u03b2j/\\u00f4j is used, where vj is the jth diagonal element of (XTX)\\u22121, and under the null hypothesis, zj is distributed as tn-p-1, and for testing the significance of groups of coefficients simultaneously, the F statistic is used.",
+        "The Gauss-Markov theorem asserts that, within the class of linear unbiased estimators, the ordinary least squares (OLS) estimator possesses the minimum variance, making it the best linear unbiased estimator (BLUE) for the parameters in a linear regression model. The mean squared error (MSE) of an estimator \\u03b8 in estimating \\u03b8 is MSE(\\u03b8) = Var(\\u03b8) + [E(\\u03b8) \\u2013 \\u03b8]\\u00b2, balancing variance and squared bias in estimation; biased estimates trade a little bias for a larger reduction in variance."
+      ]
+    },
+    {
+      "topic": "Multiple Regression from Simple Univariate Regression",
+      "sub_topics": [
+        "Multiple linear regression models with p > 1 inputs can be understood in terms of estimates for the univariate (p = 1) linear model. Multiple linear regression can be understood through univariate regression by orthogonalizing inputs; regress x on 1 to produce the residual z = x - 11, then regress y on z to obtain the coefficient \\u03b21.",
+        "Algorithm 3.1 generalizes this recipe to p inputs, where each input xj is regressed on previous orthogonalized inputs z0,...,zj-1 to produce coefficients and residual vector zj, and y is regressed on zp to give the estimate \\u03b2p. Step 2 of Algorithm 3.1 can be represented in matrix form as X = Z\\u0393, where Z has orthogonal zj as columns, and \\u0393 is an upper triangular matrix; introducing the diagonal matrix D with jth diagonal entry Djj = ||zj||, the QR decomposition of X is obtained as X = ZD-1DF = QR.",
+        "The QR decomposition represents a convenient orthogonal basis for the column space of X, and the least squares solution is given by \\u03b2 = R-1QTy and \\u0177 = QQTy; Equation 3.32 is easy to solve because R is upper triangular. Gram-Schmidt procedure for multiple regression is also a useful numerical strategy for computing the estimates."
+      ]
+    },
+    {
+      "topic": "Subset Selection",
+      "sub_topics": [
+        "Subset selection aims to improve prediction accuracy and model interpretability by retaining only a subset of the variables, eliminating the rest from the model, and using least squares regression to estimate the coefficients of the retained inputs, sacrificing some bias to reduce variance. Care must be taken when interpreting the results of model search, as standard errors and significance tests do not account for the search process; the bootstrap can be used in such settings.",
+        "Best subset regression identifies, for each k \\u2208 {0,1, 2, . . ., p}, the subset of size k that gives smallest residual sum of squares (3.2); the question of how to choose k involves the tradeoff between bias and variance, along with the more subjective desire for parsimony. The leaps and bounds procedure makes this feasible for p as large as 30 or 40.",
+        "Forward-stepwise selection starts with the intercept and then sequentially adds into the model the predictor that most improves the fit; like best-subset regression, forward stepwise produces a sequence of models indexed by k, the subset size, which must be determined. Clever updating algorithms can exploit the QR decomposition for the current fit to rapidly establish the next candidate.",
+        "Backward-stepwise selection starts with the full model and sequentially deletes the predictor that has the least impact on the fit; the candidate for dropping is the variable with the smallest Z-score (Exercise 3.10); backward selection can only be used when N > p, while forward stepwise can always be used.",
+        "Forward-stagewise regression (FS) starts like forward-stepwise regression, with an intercept equal to y, and centered predictors with coefficients initially all 0; at each step the algorithm identifies the variable most correlated with the current residual, and then computes the simple linear regression coefficient of the residual on this chosen variable, and then adds it to the current co-efficient for that variable. Forward-stagewise regression is a constrained version of forward-stepwise regression that adds a small increment of a predictor at each step and can take many steps to reach the least squares fit.",
+        "Hybrid stepwise-selection strategies combine forward and backward moves at each step, using criteria like AIC for weighing the choices and taking proper account of the number of parameters fit."
+      ]
+    },
+    {
+      "topic": "Shrinkage Methods",
+      "sub_topics": [
+        "Shrinkage methods, such as ridge regression and the lasso, are employed to reduce the complexity of linear regression models by imposing penalties on the magnitude of the coefficients, thereby improving prediction accuracy and generalization performance. Shrinkage methods produce more continuous results, reducing variance without as much high variability as subset selection.",
+        "Ridge regression shrinks the regression coefficients by adding a penalty term \\u03bb\\u2211\\u03b2\\u00b2 to the residual sum of squares, effectively shrinking coefficients toward zero and reducing the model's sensitivity to multicollinearity. The ridge regression problem is equivalent to minimizing the residual sum of squares subject to a constraint on the sum-of-squares of the coefficients, controlled by a complexity parameter \\u03bb. The ridge regression solution is \\u03b2ridge = (XTX + \\u03bbI)-1XTY, which adds a positive constant to the diagonal of XTX before inversion, making the problem non-singular.",
+        "Ridge regression can be derived as the mean or mode of a posterior distribution with a Gaussian prior on the coefficients, linking it to Bayesian estimation. The singular value decomposition (SVD) of the input matrix X provides insight into ridge regression, showing that it shrinks coefficients of basis vectors with smaller singular values more. The ridge solutions are not equivariant under scaling of the inputs, and one normally standardizes the inputs before solving.",
+        "The lasso (Least Absolute Shrinkage and Selection Operator) minimizes the residual sum of squares subject to a constraint on the sum of the absolute values of the coefficients, promoting sparsity by setting some coefficients exactly to zero and effectively performing variable selection. The lasso estimate is defined by minimizing the residual sum of squares subject to a constraint on the sum of the absolute values of the coefficients, and this constraint makes the solutions nonlinear in the yi, and there is no closed form expression as in ridge regression. The lasso does a kind of continuous subset selection, where making t sufficiently small will cause some of the coefficients to be exactly zero.",
+        "Least angle regression (LAR) is a version of forward stepwise regression, but only enters 'as much' of a predictor as it deserves, and can be viewed as a kind of democratic version of forward stepwise regression. A modification of the LAR algorithm gives the entire lasso path, which is also piecewise-linear; the LAR(lasso) algorithm is extremely efficient, requiring the same order of computation as that of a single least squares fit using the p predictors.",
+        "The elastic net combines the penalties of ridge regression and the lasso, offering a balance between coefficient shrinkage and variable selection, and is particularly useful when dealing with highly correlated predictors. The elastic-net penalty is a combination of ridge and lasso that selects variables like the lasso, and shrinks together the coefficients of correlated predictors like ridge; it also has considerable computational advantages over the Lq penalties."
+      ]
+    },
+    {
+      "topic": "Multiple Outcome Shrinkage and Selection",
+      "sub_topics": [
+        "Multiple outcome shrinkage and selection methods extend the concepts of shrinkage and selection to the case of multiple response variables, allowing for the simultaneous modeling of multiple related outcomes. In multiple output models, selection and shrinkage methods can be applied individually to each outcome or simultaneously to all outcomes.",
+        "Canonical correlation analysis (CCA) identifies linear combinations of the predictors and the response variables that have maximum correlation, providing a way to reduce the dimensionality of both the predictor and response spaces while preserving the relationships between them. Combining responses is central to canonical correlation analysis (CCA), finding uncorrelated linear combinations of inputs and responses that maximize correlations.",
+        "Reduced-rank regression is a technique that combines regression with dimensionality reduction by imposing a rank constraint on the coefficient matrix, effectively reducing the number of parameters to be estimated and improving the stability and interpretability of the model. Reduced-rank regression performs a linear regression on the pooled response matrix YUm, and then maps the coefficients back to the original response space. Reduced-rank regression borrows strength among responses by truncating the CCA."
+      ]
+    },
+    {
+      "topic": "The Gauss-Markov Theorem",
+      "sub_topics": [
+        "The Gauss-Markov theorem states that among all linear unbiased estimators, the least squares estimator has the smallest variance, focusing on estimation of any linear combination of the parameters \\u03b8 = aT\\u03b2, and the least squares estimate of aT\\u03b2 is \\u03b8 = aT\\u03b2 = aT(XTX)-1XTy.",
+        "Considering X to be fixed, this is a linear function cTy of the response vector y, and if we assume that the linear model is correct, aT\\u03b2 is unbiased since E(aT\\u03b2) = aT(XTX)-1XTX\\u03b2 = aT\\u03b2.",
+        "The Gauss-Markov theorem states that if we have any other linear estimator \\u03b8 = cTy that is unbiased for aT\\u03b2, that is, E(cTy) = aT\\u03b2, then Var(aT\\u03b2) \\u2264 Var(cTy).",
+        "The mean squared error (MSE) of an estimator \\u03b8 in estimating \\u03b8 is MSE(\\u03b8) = E(\\u03b8 \\u2013 \\u03b8)2 = Var(\\u03b8) + [E(\\u03b8) \\u2013 \\u03b8]2, where the first term is the variance, while the second term is the squared bias.",
+        "The Gauss-Markov theorem implies that the least squares estimator has the smallest mean squared error of all linear estimators with no bias, but there may well exist a biased estimator with smaller mean squared error, trading a little bias for a larger reduction in variance."
+      ]
+    },
+    {
+      "topic": "Ridge Regression",
+      "sub_topics": [
+        "Ridge regression shrinks regression coefficients by adding a penalty term to the residual sum of squares, effectively minimizing a combination of model fit and coefficient size, where \\u03bb \\u2265 0 controls the amount of shrinkage. The ridge coefficients minimize a penalized residual sum of squares, which can be written as \\u03b2ridge = argmin {\\u03a3(yi - \\u03b20 - \\u03a3xij\\u03b2j)\\u00b2 + \\u03bb\\u03a3\\u03b2j\\u00b2}, where \\u03bb \\u2265 0 is a complexity parameter that controls the amount of shrinkage, and the coefficients are shrunk toward zero and each other.",
+        "An equivalent way to formulate ridge regression is \\u03b2ridge = argmin {\\u03a3(yi - \\u03b20 - \\u03a3xij\\u03b2j)\\u00b2} subject to \\u03a3\\u03b2j\\u00b2 \\u2264 t, which explicitly imposes a size constraint on the parameters, demonstrating a one-to-one correspondence between \\u03bb and t.",
+        "Ridge regression alleviates the issue of poorly determined coefficients due to correlated variables by imposing a size constraint, which reduces the variance but introduces bias, and the ridge solutions are not equivariant under scaling of the inputs, so one normally standardizes the inputs before solving.",
+        "The ridge regression solution can be written in matrix form as \\u03b2ridge = (XTX + \\u03bbI)\\u22121XTy, which adds a positive constant to the diagonal of XTX before inversion, making the problem nonsingular even if XTX is not of full rank.",
+        "Ridge regression can be derived as the mean or mode of a posterior distribution, with a suitably chosen prior distribution, by assuming that the parameters \\u03b2j are each distributed as N(0, \\u03c42), independently of one another, and the (negative) log-posterior density of \\u03b2, with \\u03c42 and \\u03c32 assumed known, is equal to the expression in curly braces in (3.41), with \\u03bb = \\u03c32/\\u03c42."
+      ]
+    },
+    {
+      "topic": "Methods Using Derived Input Directions",
+      "sub_topics": [
+        "Methods using derived input directions reduce the dimensionality of the input space by creating a smaller set of linear combinations of the original inputs, which are then used in place of the original predictors to build a regression model.",
+        "Principal component regression (PCR) first applies principal component analysis (PCA) to the input variables to create a set of uncorrelated principal components, and then uses a subset of these components as predictors in a linear regression model. Principal components regression (PCR) forms derived input columns zm = Xum, based on principal components, and then regresses y on these zm for some M < p. PCR is very similar to ridge regression: both operate via the principal components of the input matrix; ridge regression shrinks the coefficients of the principal components.",
+        "Partial least squares (PLS) constructs a set of linear combinations of the inputs that are also related to the response variable, making it suitable for situations where the predictors are highly correlated and the goal is to predict the response. Partial least squares (PLS) seeks directions that have high variance and have high correlation with the response, in contrast to principal components regression which keys only on high variance. In the prostate cancer example, cross-validation chose M = 2 PLS directions in Figure 3.7, which produced the model given in the rightmost column of Table 3.3. Partial least squares (PLS) also constructs a set of linear combinations of the inputs for regression, but unlike principal components regression, it uses y (in addition to X) for this construction.",
+        "Partial least squares produces a sequence of derived, orthogonal inputs or directions z1, z2,...,zM; as with principal-component regression, if we were to construct all M = p directions, we would get back a solution equivalent to the usual least squares estimates; using M < p directions produces a reduced regression."
+      ]
+    },
+    {
+      "topic": "More on the Lasso and Related Path Algorithms",
+      "sub_topics": [
+        "The Dantzig selector is an alternative to the lasso for variable selection that minimizes the maximum absolute correlation between the residuals and the predictors, offering different theoretical properties and computational characteristics. The Dantzig selector (DS) is is a linear programming problem that minimizes the L1 norm subject to a constraint on the maximum absolute value of its gradient.",
+        "The grouped lasso extends the lasso to handle grouped predictors, allowing for the selection of entire groups of variables rather than individual predictors, which can be useful when dealing with categorical variables or other structured predictor sets.",
+        "Incremental forward stagewise regression is a computationally efficient algorithm for fitting sparse linear models by iteratively adding small increments to the coefficients of the predictors that are most correlated with the current residuals. Incremental Forward Stagewise Regression (FS\\u20ac) is another LAR-like algorithm, this time focused on forward stagewise regression. FS\\u20ac generates a coefficient profile by repeatedly updating (by a small amount e) the coefficient of the variable most correlated with the current residuals.",
+        "Efron originally thought that the LAR Algorithm 3.2 was an implementation of FS0, allowing each tied predictor a chance to update their coefficients in a balanced way, while remaining tied in correlation. The modification amounts to a non-negative least squares fit, keeping the signs of the coefficients the same as those of the correlations."
+      ]
+    },
+    {
+      "topic": "Multiple Outputs",
+      "sub_topics": [
+        "With multiple outputs Y1, Y2, ..., Yk, a linear model is assumed for each output, Yk = X\\u03b2k + \\u03b5k, and the model can be written in matrix notation as Y = XB + E.",
+        "A straightforward generalization of the univariate loss function is RSS(B) = \\u03a3\\u03a3(Yik \\u2013 fk(Xi))2 = tr[(Y \\u2013 XB)T(Y \\u2013 XB)], and the least squares estimates have the same form as before: B = (XTX)-1XTY.",
+        "Multiple outputs do not affect one another's least squares estimates, and if the errors \\u03b5 are correlated, a multivariate weighted criterion can be used; however, if the Si vary among observations, the solution for B no longer decouples."
+      ]
+    },
+    {
+      "topic": "Least Angle Regression",
+      "sub_topics": [
+        "Least angle regression (LAR) is a version of forward stepwise regression that only enters \"as much\" of a predictor as it deserves; at the first step, it identifies the variable most correlated with the response, and rather than fit this variable completely, LAR moves the coefficient of this variable continuously toward its least-squares value.",
+        "Algorithm 3.2 provides the details of LAR, and Exercise 3.23 verifies that the directions chosen in this fashion do what is claimed: keep the correlations tied and decreasing.",
+        "The LAR(lasso) algorithm is extremely efficient, requiring the same order of computation as that of a single least squares fit using the p predictors.",
+        "A simple modification of the LAR algorithm gives the entire lasso path, which is also piecewise-linear.",
+        "Algorithm 3.2b Least Angle Regression: FSo Modification finds the new direction by solving the constrained least squares problem."
+      ]
+    }
+  ]
+}
