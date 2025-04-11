@@ -73,8 +73,8 @@ class FilenameGeneratorTool(GeminiBaseTool):
 class DraftGeneratorTool(GeminiBaseTool):
     name: str = "draft_generator"
     description: str = "Generates an initial draft for a subtopic"
-    #model_name: str = "gemini-2.5-pro-exp-03-25"
-    model_name: str = "gemini-2.0-flash"
+    model_name: str = "gemini-2.5-pro-exp-03-25"
+    #model_name: str = "gemini-2.0-flash"
     temperature: float = 0.7
     
     def __init__(self):
