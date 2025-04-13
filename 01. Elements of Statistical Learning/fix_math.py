@@ -17,6 +17,35 @@ def corrigir_latex_em_arquivo(arquivo):
         padrao = r'\\\\([a-zA-Z]+)'
         novo_conteudo = re.sub(padrao, r'\\\1', conteudo)
         
+        # Padrão para corrigir chaves com dupla barra invertida
+        # Ex: \\{1, ..., K\\} para \{1, ..., K\}
+        padrao_chaves = r'\\\\(\{|\})'
+        novo_conteudo = re.sub(padrao_chaves, r'\\\1', novo_conteudo)
+        
+        # Padrão para corrigir delimitadores de display math com barra invertida adicional
+        # Ex: $$\ ... \$$ para $$ ... $$
+        padrao_display_math_inicio = r'\$\$\\'
+        novo_conteudo = re.sub(padrao_display_math_inicio, r'$$', novo_conteudo)
+        
+        padrao_display_math_fim = r'\\\$\$'
+        novo_conteudo = re.sub(padrao_display_math_fim, r'$$', novo_conteudo)
+        
+        # Padrão para remover citações de equações como \text{(Eq 4.9 [^13])}
+        padrao_citacao_equacao = r'\\text\{\([^)]*\[\^[0-9]+\][^)]*\)\}'
+        novo_conteudo = re.sub(padrao_citacao_equacao, r'', novo_conteudo)
+        
+        # Padrão para remover \n literal (string de texto) antes do fechamento de blocos $$
+        padrao_n_literal = r'\\n\$\$'
+        novo_conteudo = re.sub(padrao_n_literal, r'$$', novo_conteudo)
+        
+        # Função para substituir quebras de linha dentro de blocos LaTeX
+        def substituir_quebras(match):
+            return match.group(0).replace('\n', ' ')
+        
+        # Padrão para encontrar blocos LaTeX display math ($$...$$) incluindo quebras de linha
+        padrao_blocos_latex = r'\$\$(.*?)\$\$'
+        novo_conteudo = re.sub(padrao_blocos_latex, substituir_quebras, novo_conteudo, flags=re.DOTALL)
+        
         # Verifica se houve alterações
         if novo_conteudo != conteudo:
             with open(arquivo, 'w', encoding='utf-8') as f:
