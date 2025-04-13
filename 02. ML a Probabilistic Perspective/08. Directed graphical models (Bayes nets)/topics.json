@@ -1,0 +1,106 @@
+{
+  "topics": [
+    {
+      "topic": "Introduction to Graphical Models",
+      "sub_topics": [
+        "Modularity and abstraction are fundamental principles in machine learning for managing complexity, implemented through factorization and averaging in probability theory. This approach enables efficient handling of complex systems.",
+        "Probabilistic modeling addresses core challenges in machine learning, including compactly representing joint distributions p(x|\u03b8), efficiently inferring variables given others, and learning distribution parameters with limited data. These challenges are addressed through techniques like exploiting conditional independence (CI) assumptions.",
+        "Directed Graphical Models (DGMs), also known as Bayesian networks or belief networks, represent joint distributions by encoding conditional independence (CI) assumptions using directed acyclic graphs (DAGs). Nodes represent random variables, and the absence of edges denotes CI assumptions, providing a visual and intuitive framework for probabilistic relationships and facilitating probabilistic inference and reasoning under uncertainty.",
+        "The chain rule of probability allows representing any joint distribution as a product of conditional probabilities, regardless of the variable ordering. However, the complexity of representing conditional distributions, such as p(xt|x1:t-1), increases with the number of variables, leading to a large number of parameters, specifically O(K^V), where K is the number of states and V is the number of variables, requiring simplification techniques.",
+        "Conditional independence assumptions, denoted as X \u22a5 Y | Z, where X and Y are conditionally independent given Z, allow for a more compact representation of joint distributions by factoring the joint distribution into a product of conditional marginals, i.e., p(X, Y | Z) = p(X | Z)p(Y | Z). Exploiting conditional independence (CI) assumptions is key to efficiently representing large joint distributions.",
+        "Conditional probability tables (CPTs) or conditional probability distributions (CPDs) are used to represent the conditional probabilities between variables in DGMs. The number of parameters in CPTs grows exponentially with the number of parents, making learning difficult with limited data. Replacing CPTs with more parsimonious CPDs, like multinomial logistic regression, reduces the number of parameters to O(K^2V^2), creating a compact density model suitable for evaluating the probability of a fully observed vector.",
+        "The Markov assumption, a specific type of conditional independence, posits that the future is independent of the past given the present (xt+1 \u22a5 X1:t-1 | xt), simplifying the joint distribution and leading to the concept of Markov chains, which can be characterized by an initial distribution over states, p(x1 = i), and a state transition matrix, p(xt = j | xt-1 = i)."
+      ]
+    },
+    {
+      "topic": "Key Concepts: Chain Rule and Conditional Independence",
+      "sub_topics": [
+        "The chain rule of probability provides a way to represent any joint distribution by expressing it as a product of conditional probabilities, regardless of the variable ordering. However, representing conditional distributions becomes increasingly complex as the number of variables grows, requiring substantial data to accurately learn the parameters.",
+        "Conditional Probability Tables (CPTs) represent the conditional distribution of a variable given its parents, with the size of the table growing exponentially with the number of parents and states. Replacing CPTs with more parsimonious Conditional Probability Distributions (CPDs), such as multinomial logistic regression, reduces the number of parameters and creates more compact models.",
+        "Conditional independence (CI) is a property where two variables, X and Y, are independent given a third variable Z, denoted as X \u22a5 Y | Z, which simplifies joint distributions. This means that knowing Z, X provides no additional information about Y, and vice versa.",
+        "The Markov assumption posits that the future is independent of the past given the present, simplifying the representation of sequential data, where the value of a variable at time t+1 depends only on its value at time t. This assumption, combined with the chain rule, simplifies the joint distribution representation.",
+        "Markov chains, characterized by an initial distribution and a state transition matrix, model sequences where the current state depends only on the previous state. A first-order Markov chain is characterized by an initial distribution over states, p(x1 = i), and a state transition matrix, p(xt = j | xt-1 = i).",
+        "Graphical models extend the Markov assumption to arbitrary collections of variables, representing dependencies and conditional independencies through graphs. These models represent joint distributions by making CI assumptions, where nodes in the graph represent random variables and the (lack of) edges represent CI assumptions, allowing for efficient representation and inference in complex systems.",
+        "Directed graphical models (DGMs), also known as Bayesian networks, use directed acyclic graphs (DAGs) to represent probabilistic relationships. The nodes in a DAG can be ordered such that parents come before children, which is called a topological ordering. The ordered Markov property states that a node only depends on its immediate parents, not on all predecessors in the ordering: Xs \u22a5 Xpred(s)\\pa(s) | Xpa(s), where pa(s) are the parents of node s and pred(s) are the predecessors of node s in the ordering."
+      ]
+    },
+    {
+      "topic": "Graph Terminology and Directed Graphical Models (DGMs)",
+      "sub_topics": [
+        "A graph G = (V, E) consists of a set of nodes or vertices, V = {1, ..., V}, and a set of edges, E = {(s, t) : s, t \u2208 V}, which can be represented by an adjacency matrix G(s, t), where G(s, t) = 1 if there is an edge from node s to node t. In a directed graph, the parents of a node s are the set of nodes that feed into it, defined as pa(s) = {t : G(t, s) = 1}, while the children of a node s are the set of nodes that feed out of it, defined as ch(s) = {t : G(s, t) = 1}.",
+        "Key graph terms include: parent (nodes feeding into a node), child (nodes feeding out of a node), family (node and its parents), root (node with no parents), and leaf (node with no children). Ancestors are nodes that connect to a given node via a trail, descendants are nodes reachable via trails from a given node, and neighbors are immediately connected nodes. The degree of a node is the number of neighbors it has, with in-degree and out-degree referring to the number of parents and children, respectively.",
+        "A cycle or loop is a series of nodes that allows traversal back to the starting node, and a DAG (Directed Acyclic Graph) is a directed graph with no directed cycles. A topological ordering is a numbering of nodes in a DAG such that parents have lower numbers than their children, and a path or trail is a series of directed edges leading from one node to another.",
+        "A tree is an undirected graph with no cycles, while a polytree is a directed tree allowing multiple parents. A forest is a set of trees, and a subgraph is a graph created using a subset of nodes and their corresponding edges. A clique is a set of nodes that are all neighbors of each other, and a maximal clique is a clique that cannot be made any larger without losing the clique property.",
+        "Directed graphical models (DGMs), also known as Bayesian networks or belief networks, are graphical models whose graph is a directed acyclic graph (DAG) used to represent a joint probability distribution by making conditional independence assumptions. DAGs possess a key property: nodes can be ordered such that parents precede children, known as topological ordering, enabling the definition of the ordered Markov property.",
+        "The ordered Markov property states that a node only depends on its immediate parents, not on all predecessors in the ordering, i.e., Xs \u22a5 Xpred(s)\\pa(s) | Xpa(s), where pa(s) are the parents of node s and pred(s) are the predecessors of node s in the ordering. The ordered Markov property is a natural generalization of the first-order Markov property from chains to general DAGs, allowing for a compact representation of joint distributions."
+      ]
+    },
+    {
+      "topic": "Examples of Graphical Models",
+      "sub_topics": [
+        "Naive Bayes classifiers assume that features are conditionally independent given the class label, simplifying the joint distribution as p(y, x) = p(y) * product of p(xj|y) for each feature j. Tree-augmented naive Bayes classifiers capture correlations between features using a graphical model, where the model is a tree.",
+        "Markov models represent sequences where the future depends only on the immediate past, with a first-order Markov chain defined by p(x1:T) = p(x1, x2) * product of p(xt|xt-1, xt-2) from t=3 to T. Higher-order Markov models incorporate dependencies from multiple past states.",
+        "Hidden Markov Models (HMMs) model an underlying hidden process as a first-order Markov chain, with observed data being a noisy observation of this process. The transition model, p(zt | zt-1), describes the transitions between hidden states, and the observation model, p(xt | zt), describes the relationship between hidden states and observed variables. HMMs are useful for sequence data like genomics or language.",
+        "The noisy-OR model assumes that if a parent is on, the child will usually also be on, with links from parents to child failing independently at random. This model is used in medical diagnosis networks to represent the relationship between diseases and symptoms.",
+        "Medical diagnosis can be modeled using DGMs like the alarm network or QMR network, representing relationships between measured variables in an intensive care unit (ICU) or infectious diseases.",
+        "Genetic linkage analysis uses pedigree graphs and DGMs to model the inheritance of genetic material, incorporating concepts like penetrance, Mendelian inheritance, and recombination to infer genetic traits.",
+        "Directed Gaussian Graphical Models (GGMs) use real-valued variables and linear Gaussian CPDs, resulting in a joint Gaussian distribution that allows efficient computation of conditional distributions and inference."
+      ]
+    },
+    {
+      "topic": "Detailed Examples: Naive Bayes, Markov Models, and Medical Diagnosis",
+      "sub_topics": [
+        "Naive Bayes classifiers operate under the assumption that features are conditionally independent given the class label, which is expressed mathematically as p(y, x) = p(y) * product of p(xj|y) for j=1 to D, where D is the number of features. Tree-augmented Naive Bayes (TAN) classifiers extend the Naive Bayes approach by incorporating a tree structure to capture correlations between features, improving the model's ability to represent dependencies while maintaining computational efficiency.",
+        "Markov chains represent sequences where the future depends only on the immediate past, simplifying the modeling of sequential data, with a joint distribution defined as p(x1:T) = p(x1, x2) * product of p(xt|xt-1, xt-2) from t=3 to T. Hidden Markov Models (HMMs) model an underlying hidden process with noisy observations, where zt represents the hidden variable and xt represents the observed variable, characterized by a transition model p(zt|zt-1) and an observation model p(xt|zt). HMMs are used for sequence data, such as genomics or language, where t represents location rather than time.",
+        "DGMs can model relationships between variables measured in an intensive care unit (ICU), such as breathing rate and blood pressure, to create alarm networks for medical diagnosis. The Quick Medical Reference (QMR) network, a bipartite graph structure, models infectious diseases with diseases (causes) at the top and symptoms (findings) at the bottom, using noisy-OR models to represent conditional probabilities. Knowledge engineering is used to create probabilistic expert systems, such as the alarm network, by manually encoding dependencies and probabilities."
+      ]
+    },
+    {
+      "topic": "Genetic Linkage Analysis and Directed Gaussian Graphical Models",
+      "sub_topics": [
+        "Genetic linkage analysis uses DGMs to model the relationship between parents and children in a pedigree graph, representing the inheritance of genetic material. Each person's genome has three nodes: the observed marker Xij (blood type, DNA fragment), and two hidden alleles, Gm and Gp, one inherited from each parent. The Mendelian inheritance of genetic material is reflected by arcs from the mother and father into Gij, and the inheritance model is defined as p(Gm(i)|Gm(k), Gp(k), Z(i)) where Z(i) is a hidden variable specifying the choice.",
+        "Directed Gaussian graphical models (GGMs) use real-valued variables with linear Gaussian conditional probability distributions (CPDs) of the form p(xt|xpa(t)) = N(xt|\u03bct + w * xpa(t), \u03c3\u00b2t). Multiplying all these CPDs together results in a large joint Gaussian distribution of the form p(x) = N(x|\u03bc, \u03a3), called a Gaussian Bayes net. The mean and covariance of the joint Gaussian distribution can be derived from the CPD parameters by rewriting the CPDs in a matrix-vector form."
+      ]
+    },
+    {
+      "topic": "Inference in Graphical Models",
+      "sub_topics": [
+        "Probabilistic inference involves estimating unknown quantities from known quantities using a joint distribution. This involves computing the posterior distribution of hidden variables given visible variables: p(xh | xv, \u03b8) = p(xh, xv | \u03b8) / p(xv | \u03b8).",
+        "The normalization constant p(xv | \u03b8) is the likelihood of the data, also called the probability of the evidence. Conditioning on the data involves clamping the visible variables to their observed values and then normalizing to obtain the posterior distribution.",
+        "Inference often involves query variables (xq), whose values we wish to know, and nuisance variables (xn), which we are not interested in. The nuisance variables are marginalized out to obtain the distribution of the query variables: p(xq | xv, \u03b8) = \u03a3xn p(xq, xn | xv, \u03b8).",
+        "For multivariate Gaussian distributions, exact inference can be performed in O(V^3) time, where V is the number of variables. For discrete random variables with K states each, exact inference using a multi-dimensional table takes O(K^V) time.",
+        "The factorization encoded by the graphical model can be exploited to perform inference in O(V K^(w+1)) time, where w is the treewidth of the graph. For tree-like graphs, inference takes linear time in the number of nodes. In general, exact inference can take exponential time in the number of nodes. Approximate inference schemes are necessary for complex graphs where exact inference is computationally intractable, offering trade-offs between accuracy and computational cost."
+      ]
+    },
+    {
+      "topic": "Learning in Graphical Models",
+      "sub_topics": [
+        "In graphical models, learning involves estimating the parameters \u03b8 of the model, typically by computing a Maximum A Posteriori (MAP) estimate of the parameters given the data: \u03b8 = argmax \u03a3 log p(xi,v | \u03b8) + log p(\u03b8), where xi,v are the visible variables in case i.",
+        "In a Bayesian view, the parameters are unknown variables and should also be inferred, leading to no distinction between inference and learning; parameters are added as nodes to the graph, conditioned on the data, and the values of all the nodes are inferred.",
+        "When inferring parameters from data, it is often assumed that the data is independent and identically distributed (iid), which can be represented using plate notation in graphical models, using boxes to denote repeated variables and simplify the diagram's representation.",
+        "For a DGM with complete data (i.e., all variables are fully observed), the likelihood decomposes according to the graph structure: p(D | \u03b8) = \u03a0 p(Dt | \u03b8t), where Dt is the data associated with node t and its parents.",
+        "With complete data, a factored prior plus a factored likelihood implies a factored posterior: p(\u03b8 | D) \u221d \u03a0 p(Dt | \u03b8t)p(\u03b8t), which means that the posterior of each conditional probability distribution (CPD) can be computed independently.",
+        "When dealing with missing data and/or hidden variables, the likelihood no longer factorizes, and it is no longer convex, requiring the computation of locally optimal maximum likelihood (ML) or MAP estimates, with Bayesian inference of the parameters being even harder, often requiring approximate inference techniques."
+      ]
+    },
+    {
+      "topic": "Conditional Independence Properties of DGMs",
+      "sub_topics": [
+        "Conditional independence (CI) assumptions are at the heart of any graphical model, denoted as XA \u22a5G XB | XC, where A is independent of B given C in the graph G, and I(G) is the set of all such CI statements encoded by the graph.",
+        "A graph G is an I-map (independence map) for p, or p is Markov wrt G, iff I(G) \u2286 I(p), where I(p) is the set of all CI statements that hold for distribution p, allowing the graph to be used as a safe proxy for p when reasoning about p's CI properties.",
+        "d-separation is a criterion for determining conditional independence in DGMs, where an undirected path P is d-separated by a set of nodes E (containing the evidence) if at least one of three conditions holds. A set of nodes A is d-separated from a set of nodes B given a third observed set E if each undirected path from every node a \u2208 A to every node b \u2208 B is d-separated by E.",
+        "The Bayes ball algorithm is a simple way to see if A is d-separated from B given E, based on the definition of d-separation, where we \u201cshade\u201d all nodes in E, indicating that they are observed. By placing balls at each node in A and letting them bounce around according to specific rules, we can determine if they reach any nodes in B.",
+        "The directed local Markov property states that a node is conditionally independent of its non-descendants given its parents: t \u22a5 nd(t) \\ pa(t) | pa(t), where nd(t) are the non-descendants of node t and pa(t) are its parents.",
+        "The Markov blanket of a node in a DGM is equal to the parents, the children, and the co-parents (i.e., other nodes who are also parents of its children), denoted as mb(t) = ch(t) \u222a pa(t) \u222a copa(t)."
+      ]
+    },
+    {
+      "topic": "Influence (Decision) Diagrams",
+      "sub_topics": [
+        "Influence diagrams are a graphical notation for representing multi-stage (Bayesian) decision problems, extending DGMs by adding decision nodes (action nodes) and utility nodes (value nodes). Chance nodes represent random variables.",
+        "The value of perfect information (VPI) of a variable T is the difference between the maximum expected utility (MEU) with and without knowing T: VPI = MEU(I + T \u2192 D) \u2212 MEU(I), where I is the base influence diagram and D is the decision node. This quantifies the benefit of knowing a variable's value before making a decision.",
+        "A partially observed Markov decision process (POMDP) is a dynamical system model that is a hidden Markov model augmented with action and reward nodes, representing the perception-action cycle of intelligent agents. A Markov decision process (MDP) is a special case of a POMDP where the states are fully observed, making it easier to solve since we only have to compute a mapping from observed states to actions."
+      ]
+    }
+  ]
+}

@@ -1,0 +1,76 @@
+{
+  "topics": [
+    {
+      "topic": "Latent Variable Models",
+      "sub_topics": [
+        "Latent Variable Models (LVMs) correlate observed variables through hidden common causes, offering advantages such as fewer parameters and compressed data representation via a bottleneck effect for unsupervised learning. Generic LVM structures involve L latent variables and D visible variables, where D is usually much larger than L. LVMs handle many-to-many, one-to-many, many-to-one, and one-to-one mappings between latent and visible variables, enabling various model generation based on likelihood p(xi|zi) and prior p(zi) forms. Directed Graphical Models (DGMs) can represent LVMs, where leaves denote observed variables (e.g., medical symptoms) and roots signify primary causes (e.g., smoking), with hidden variables mediating factors. The number of latent variables (L) and visible variables (D) determines the model's mapping complexity; many-to-many mappings occur when L > 1, while one-to-one mappings can subsume other representations by allowing vector-valued latent or observed variables. The likelihood function p(xi|zi) and the prior p(zi) determine the variety of models that can be generated, influencing the model's ability to capture underlying data structures and dependencies. Mathematical challenges in LVMs include the difficulty of fitting these models compared to those without latent variables, primarily due to the increased complexity in parameter estimation and the non-identifiability issues arising from the hidden variables."
+      ]
+    },
+    {
+      "topic": "Mixture Models",
+      "sub_topics": [
+        "Mixture models utilize a discrete latent state to represent data, employing a discrete prior p(zi) = Cat(\u03c0) and a likelihood function p(xi|zi = k) = pk(xi) to generate a variety of models. They combine K base distributions pk(xi|\u03b8) using mixing weights \u03c0k, forming a convex combination where mixing weights satisfy 0 \u2264 \u03c0k \u2264 1 and the sum of \u03c0k equals 1, mathematically expressed as p(xi|\u03b8) = \u03a3 \u03c0k pk(xi|\u03b8). Mixture models can be used for density estimation, data compression, outlier detection, and generative classification, offering a versatile approach to various machine learning tasks. They are commonly used for clustering, where the posterior probability p(zi = k|xi, \u03b8) indicates cluster membership, enabling soft clustering and hard clustering based on MAP estimation. The Mixture of Gaussians (MOG), also called a Gaussian Mixture Model (GMM), is a mixture model where each base distribution is a multivariate Gaussian with mean \u03bck and covariance matrix \u03a3k, enabling approximation of any density on RD with a sufficiently large number of components."
+      ]
+    },
+    {
+      "topic": "Mixture of Experts",
+      "sub_topics": [
+        "Mixture of experts (MoE) models combine multiple submodels (experts), each an 'expert' in a specific input space region, using a gating function p(zi = k|xi, \u03b8) to determine which expert to use based on input values. Any model can be used for the expert, such as neural networks, resulting in a mixture density network that is slower to train but more flexible than mixtures of experts. Hierarchical mixture of experts can be created by making each expert itself a mixture of experts. Mixtures of experts are useful in solving inverse problems, particularly where a many-to-one mapping needs to be inverted, such as in robotics or kinematic tracking from video. The overall prediction of the model is obtained using P(yi|xi, \u03b8) = \u03a3k p(zi = k|xi, \u03b8)p(yi|xi, zi = k, \u03b8), combining the predictions of individual experts based on the gating function."
+      ]
+    },
+    {
+      "topic": "Parameter Estimation for Mixture Models",
+      "sub_topics": [
+        "Parameter estimation in Latent Variable Models (LVMs) is challenging due to the posterior having multiple modes, corresponding to different labelings of the clusters, making parameters unidentifiable. The Expectation-Maximization (EM) algorithm is used for parameter estimation when hidden variables are present, alternating between inferring missing values and optimizing parameters given the filled-in data. The EM algorithm exploits the fact that the ML/MAP estimate would be easy to compute if the data were fully observed, alternating between inferring the missing values given the parameters (E step), and then optimizing the parameters given the \u201cfilled in\u201d data (M step). The unidentifiability problem in mixture models can be addressed by computing a single local mode, i.e., performing approximate MAP estimation, which is a common approach due to its simplicity and reasonable approximation with sufficient sample size. The posterior over parameters may have multiple modes, reflecting different labelings of the clusters, due to the unidentifiability of parameters. To avoid overfitting, MAP estimation can be used instead of ML estimation by incorporating prior knowledge about the parameters, which helps to regularize the model and prevent it from fitting the noise in the data, especially in cases with limited sample sizes. Online EM algorithms are used to learn from large or streaming datasets by updating the model parameters incrementally as new data arrives, allowing for continuous learning and adaptation to changing data distributions."
+      ]
+    },
+    {
+      "topic": "EM Algorithm",
+      "sub_topics": [
+        "The EM algorithm is an iterative process that alternates between inferring missing values given parameters (E step) and optimizing parameters given the filled-in data (M step). The EM algorithm defines the complete data log likelihood as lc(\u03b8) = \u03a3 log p(xi, zi|\u03b8) and introduces the expected complete data log likelihood Q(\u03b8, \u03b8t-1) = E[lc(\u03b8)|D, \u03b8t-1], where the expectation is taken with respect to the old parameters \u03b8t-1 and the observed data D. In the E step, the auxiliary function Q(\u03b8, \u03b8^(t-1)) is computed, representing the expected complete data log likelihood given observed data and previous parameters. The M step involves maximizing the Q function with respect to \u03b8, leading to updated parameter estimates. The E step computes Q(\u03b8, \u03b8t-1), identifying terms on which the MLE depends, known as expected sufficient statistics (ESS), while the M step optimizes the Q function with respect to \u03b8, i.e., \u03b8 = arg max Q(\u03b8, \u03b8t-1); for MAP estimation, the M step is modified as \u03b8t = argmax Q(\u03b8, \u03b8t-1) + log p(\u03b8). The EM algorithm can be generalized to handle various models, including mixtures of experts, DGMs with hidden variables, and Student's t-distributions, with appropriate modifications to the E and M steps. The K-means algorithm is a variant of the EM algorithm for GMMs, which makes assumptions such as \u03a3k = \u03c3^2ID is fixed, and \u03c0k = 1/K is fixed, so only the cluster centers, \u03bck \u2208 RD, have to be estimated. The EM algorithm monotonically increases the log likelihood of the observed data (or stays the same), serving as a useful debugging tool."
+      ]
+    },
+    {
+      "topic": "Model Selection for Latent Variable Models",
+      "sub_topics": [
+        "Model selection for LVMs involves specifying the number of latent variables, which controls model complexity; in mixture models, this corresponds to choosing the number of clusters K. The optimal Bayesian approach is to pick the model with the largest marginal likelihood, K* = argmax_K p(D|K); however, evaluating the marginal likelihood for LVMs is often difficult, leading to the use of approximations like BIC or cross-validated likelihood. The challenges in model selection include the difficulty in evaluating the marginal likelihood for LVMs and the need to search over a potentially large number of models. For non-probabilistic models like K-means, reconstruction error can be used as a proxy for likelihood, but it decreases with increasing model complexity, requiring alternative methods like identifying a 'knee' or 'kink' in the error curve. Alternative approaches for model selection include stochastic sampling in the space of models, such as reversible jump MCMC, or using Dirichlet process mixture models; for non-probabilistic methods like K-means, reconstruction error is used as a proxy for likelihood."
+      ]
+    },
+    {
+      "topic": "Fitting Models with Missing Data",
+      "sub_topics": [
+        "Fitting models with missing data involves maximizing the likelihood function with respect to the observed data, accounting for the missing or hidden components. The EM algorithm can be used to compute a local optimum for models with missing data, such as an MVN, by iteratively estimating the expected complete data log likelihood and maximizing it. When fitting a joint density model by maximum likelihood, but we have \u201choles\u201d in our data matrix, we can compute \u03b8 = argmax\u03b8 p(Xv|\u03b8, O), and under the missing at random assumption, we have p(Xv|\u03b8, O) = \u220fi=1N p(xiv|\u03b8). The E step involves computing the expected sufficient statistics, while the M step involves plugging these statistics into the usual MLE equations to update the parameter estimates."
+      ]
+    },
+    {
+      "topic": "Mixture of Multinoullis",
+      "sub_topics": [
+        "Mixture models can define density models for D-dimensional bit vectors using a product of Bernoullis as a class-conditional density: p(xi|zi = k, \u03b8) = \u220f Ber(xij|\u03bcjk), where \u03bcjk is the probability that bit j turns on in cluster k. Introducing latent variables can enhance model power, with the mean and covariance of the mixture distribution given by E[x] = \u03a3 \u03c0k \u03bck and COV[x] = \u03a3 \u03c0k(\u03a3k + \u03bck\u03bckT) \u2013 E[x]E[x]T, where \u03a3k = diag(\u03bcjk(1 \u2013 \u03bcjk)), allowing the mixture distribution to capture correlations between variables. Unlike single product-of-Bernoulli models, mixture distributions can capture correlations between variables, despite the component distributions being factorized, enhancing their ability to model complex data."
+      ]
+    },
+    {
+      "topic": "Mixtures of Experts",
+      "sub_topics": [
+        "Mixture of experts (MoE) models are discriminative models for classification and regression that use multiple linear regression functions, each applying to a different part of the input space, with mixing weights and mixture densities being input-dependent. The function p(zi = k|xi, \u03b8) is called a gating function, which determines the expert to use based on input values, and each submodel acts as an expert in a specific region of the input space. The gating function p(zi = k|xi, \u03b8) determines which expert to use based on the input values, while the experts model the conditional distribution p(yi|xi, zi = k, \u03b8), allowing for complex and flexible modeling. The overall prediction of the model is obtained using P(yi|xi, \u03b8) = \u03a3 p(zi = k|xi, \u03b8)p(yi|xi, zi = k, \u03b8), combining the predictions of individual experts based on the gating function, and these models are useful in solving inverse problems where a many-to-one mapping must be inverted. Hierarchical mixture of experts can be created by making each expert itself a mixture of experts, allowing for more complex and hierarchical modeling of data relationships, where experts at different levels capture different aspects of the data. EM algorithm can be used to fit MoE models by estimating the gating parameters and expert parameters iteratively."
+      ]
+    },
+    {
+      "topic": "EM for Gaussian Mixture Models (GMMs)",
+      "sub_topics": [
+        "The EM algorithm for Gaussian Mixture Models (GMMs) involves an iterative process with an E step to compute the responsibility that cluster k takes for data point i, denoted as rik, and an M step to update the mixing weights \u03c0k, means \u03bck, and covariances \u03a3k. In the E step, the responsibility is calculated as rik = \u03c0k p(xi|\u03b8(t-1)) / \u03a3 \u03c0k' p(xi|\u03b8(t-1)), where \u03b8 represents the parameters, and in the M step, the mixing weights are updated as \u03c0k = (1/N) \u03a3 rik, the means as \u03bck = (\u03a3 rik xi) / rk, and the covariances as \u03a3k = (\u03a3 rik (xi - \u03bck)(xi - \u03bck)T) / rk. A popular variant of the EM algorithm for GMMs is the K-means algorithm, which makes assumptions such as fixed \u03a3k = \u03c3^2ID and \u03c0k = 1/K, simplifying the E step to a hard assignment and the M step to updating cluster centers by computing the mean of all points assigned to it."
+      ]
+    },
+    {
+      "topic": "Using Mixture Models for Clustering",
+      "sub_topics": [
+        "Mixture models serve as black-box density models p(xi) for data compression, outlier detection, and generative classifiers, modeling class-conditional densities p(x|y = c) via mixture distributions. In clustering, mixture models compute p(zi = k|xi, \u03b8), representing the posterior probability of point i belonging to cluster k, known as the responsibility of cluster k for point i, calculated using Bayes' rule. The procedure, called soft clustering, is mathematically expressed as rik = p(zi = k|xi, \u03b8) = p(zi = k|\u03b8)p(xi|zi = k, \u03b8) / \u03a3 p(zi = k'|\u03b8)p(xi|zi = k', \u03b8), identical to computations in generative classifiers, with differences arising at training time, where mixture models lack observed zi."
+      ]
+    },
+    {
+      "topic": "Online EM",
+      "sub_topics": [
+        "Online EM methods are designed for learning with large or streaming datasets, and they include incremental EM, which optimizes the lower bound one data case at a time but requires storing expected sufficient statistics for each case, and stepwise EM, which is based on stochastic approximation theory and requires only constant memory use. Incremental EM keeps track of \u03bc as well as the si, swapping out the old si and replacing it with the new s_i^{new}, allowing exploitation of the sparsity of s_i^{new} to speed up the computation of \u03b8. Stepwise EM moves \u03bc towards s_i whenever a new si is computed, using a stepsize \u03b7k that satisfies the Robbins-Monro conditions, providing a means to update parameters with each new data point."
+      ]
+    }
+  ]
+}

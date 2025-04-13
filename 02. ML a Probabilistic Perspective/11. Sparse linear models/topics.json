@@ -1,0 +1,60 @@
+{
+  "topics": [
+    {
+      "topic": "Sparse Linear Models & Feature Selection",
+      "sub_topics": [
+        "Sparse linear models are used for feature selection by encouraging the weight vector to have many zeros, offering computational advantages and preventing overfitting, especially when the number of dimensions exceeds the number of training cases. This is valuable in scenarios such as signal processing, where representing signals using a small number of basis functions can save time and space, as well as in genomics, where identifying the smallest set of genes can accurately predict a response can improve diagnostic devices and scientific understanding. Feature selection aims to identify input variables with high mutual information with the output, but may fail to capture interaction effects between variables. Sparse models address this by selecting sets of variables simultaneously using a model-based approach, encouraging sparsity in the weight vector to offer computational advantages. Sparsity can be achieved in kernel machines by selecting a subset of training examples, reducing overfitting and computational cost, which is known as a sparse kernel machine.",
+        "Bayesian variable selection provides a natural way to approach the variable selection problem by computing the posterior distribution over models, where each model represents a different subset of features, and using this distribution to make inferences about which features are most relevant. It poses the problem by defining indicator variables for feature relevance and computing the posterior over models to determine the most probable set of relevant features. It calculates the posterior distribution over models by balancing the likelihood of the data given the model and the prior probability of the model. Challenges include the 'bumpy' nature of the objective function and interpreting the posterior over a large number of models. Summarization techniques like posterior mode (MAP estimate) and median model are used. Marginal inclusion probabilities p(\u03b3j = 1|D) are computed to assess confidence in including variables; a higher threshold captures fewer false positives but more false negatives. Variable selection is useful when the number of dimensions is large, but computing the full posterior is impossible; summaries like MAP estimate or marginal inclusion probabilities are sought.",
+        "The spike and slab model is a Bayesian approach to feature selection that uses a prior distribution on the weights that encourages sparsity, with a 'spike' at zero and a 'slab' that allows for non-zero values, and the likelihood is computed by integrating over the weights and a noise variance parameter. It uses a prior that encourages sparsity by placing a 'spike' at zero for irrelevant features and a 'slab' (uniform distribution) for relevant ones, effectively clamping irrelevant coefficients to zero. The spike and slab model employs a prior p(\u03b3) = \u03a0j Ber(\u03b3j|\u03c0o) on the bit vector \u03b3, where \u03c0o represents the probability of a feature being relevant, and combines it with a prior p(w|\u03b3, \u03c3\u00b2) that encourages wj to be zero when \u03b3j = 0 and non-zero when \u03b3j = 1, using a spike at the origin and a slab of constant height, respectively."
+      ]
+    },
+    {
+      "topic": "L1 Regularization (LASSO): Basics & Formulation",
+      "sub_topics": [
+        "l1 regularization encourages sparsity by adding a penalty term proportional to the absolute values of the weights, resulting in solutions with many zero coefficients. This is achieved by replacing discrete variable constraints with continuous priors, such as a zero-mean Laplace distribution, that concentrate probability density near the origin. The penalized negative log-likelihood has the form f(w) = NLL(w) + \u03bb||w||\u2081, where ||w||\u2081 is the l1 norm, promoting sparsity for large \u03bb. In linear regression, the l1 objective becomes f(w) = 1/(2\u03c3\u00b2) \u03a3i (yi - (w\u2080 + wixi))\u00b2 + \u03bb||w||\u2081. This is known as basis pursuit denoising (BPDN), where putting a zero-mean Laplace prior on parameters and performing MAP estimation is called l1 regularization.",
+        "l1 regularization can be expressed as minimizing RSS(w) + \u03bb||w||\u2081, where \u03bb controls the sparsity level, or as a constrained optimization problem: min RSS(w) s.t. ||w||\u2081 \u2264 B. The LASSO (Least Absolute Shrinkage and Selection Operator) is equivalent to l1 regularization and stands for 'least absolute shrinkage and selection operator'. The lasso objective is min RSS(w) + \u03bb||w||\u2081, equivalent to min RSS(w) subject to ||w||\u2081 \u2264 B. It can be formulated as a constrained optimization problem, where the goal is to minimize the residual sum of squares subject to a bound on the l1 norm of the weights.",
+        "The l1 penalty promotes sparsity because its contours have corners aligned with the coordinate axes, making it more likely to intersect the objective function at sparse solutions. l1 regularization yields sparse solutions because the l1 ball has corners on coordinate axes, favoring sparse solutions, unlike the l2 ball.",
+        "The subdifferential of the absolute value function, used in the l1 penalty, introduces non-smoothness, requiring special optimization techniques and the concept of soft thresholding. The subdifferential of the lasso objective is used to derive soft thresholding, setting coefficients to zero if weakly correlated with the residual. Soft thresholding shrinks coefficients towards zero and sets coefficients below a threshold to exactly zero, balancing model fit and sparsity."
+      ]
+    },
+    {
+      "topic": "Algorithms for Sparse Linear Models & L1 Regularization",
+      "sub_topics": [
+        "Algorithms for sparse linear models involve searching through the space of possible models and evaluating the cost function at each point, which can be computationally challenging due to the exponential number of models, and various heuristics, such as greedy search methods, are used to find good solutions. Coordinate descent optimizes one variable at a time while holding others fixed, particularly appealing if each one-dimensional optimization problem can be solved analytically. The shooting algorithm for lasso computes the optimal value of each weight given all other coefficients.",
+        "Active set methods update many variables at a time, suitable for generating regularization paths by exploiting warm starting, where solutions are quickly computed from previous ones. Active set methods update many variables at a time but are more complicated, needing identification of constrained variables.",
+        "LARS (least angle regression and shrinkage) computes w(\u03bb) for all \u03bb efficiently, starting with a large \u03bb and decreasing. The LARS algorithm computes w(\u03bb) for all possible values of \u03bb in an efficient manner, starting with the variable most correlated with the response vector.",
+        "Proximal gradient methods are suitable for large-scale problems, using the proximal operator inside a gradient descent routine. Proximal and gradient projection methods are suitable for very large scale problems. Proximal operators return a point that minimizes a function while staying close to a given point. Nesterov's method is a faster version of proximal gradient descent that can be obtained by expanding the quadratic approximation around a point other than the most recent parameter value.",
+        "Greedy search algorithms, such as single best replacement (SBR) and orthogonal least squares, are used to find the MAP model by iteratively adding or removing variables. Orthogonal matching pursuits (OMP) is a faster alternative to orthogonal least squares, selecting features based on correlation with the current residual.",
+        "Stochastic search methods, like MCMC, can approximate the posterior by flipping single bits and estimating state probabilities. EM (expectation maximization) algorithm can be used to solve the lasso problem by viewing the Laplace distribution as a Gaussian scale mixture. EM and variational inference can be applied to the spike and slab model, but may suffer from local minima; mean field approximations can be used for the Bernoulli-Gaussian model."
+      ]
+    },
+    {
+      "topic": "Extensions of L1 Regularization",
+      "sub_topics": [
+        "Group Lasso extends l1 regularization to cases where there are many parameters associated with a given variable, using a 2-norm of the group weight vector. Group lasso extends l1 regularization to select or deselect entire groups of variables, promoting sparsity at the group level by penalizing the 2-norm of the group weight vectors.",
+        "Fused lasso encourages neighboring coefficients to be similar, in addition to being sparse, by adding a penalty term that penalizes differences between adjacent coefficients. The fused lasso encourages neighboring coefficients to be similar, in addition to being sparse, by adding a penalty term that penalizes the absolute differences between adjacent coefficients.",
+        "Elastic net combines ridge and lasso regression, using a penalty function that is strictly convex and exhibits a grouping effect. The Elastic Net combines l1 and l2 regularization, using an objective function J(w, \u03bb1, \u03bb2) = ||y - Xw||\u00b2 + \u03bb2||w||\u00b2 + \u03bb1||w||1, to achieve both sparsity and grouping effects, where highly correlated variables tend to have similar regression coefficients.",
+        "Non-convex regularizers use priors with a larger spike at 0 and heavier tails than the Laplace prior, often outperforming l1 regularization."
+      ]
+    },
+    {
+      "topic": "Automatic Relevance Determination (ARD) / Sparse Bayesian Learning (SBL)",
+      "sub_topics": [
+        "Automatic relevance determination (ARD) uses a Gaussian prior with a separate precision parameter for each weight, allowing the algorithm to automatically determine which features are relevant. Automatic Relevance Determination (ARD), also known as sparse Bayesian learning (SBL), employs a hierarchical Bayesian model, p(y|x, w, \u03b2) = N(y|wTx, 1/\u03b2) and p(w) = N(w|0, A-1), where A is a diagonal matrix of weight precisions, to automatically prune irrelevant features by driving their corresponding weight precisions to infinity, effectively setting their weights to zero.",
+        "The marginal likelihood can be computed analytically, and the parameters can be estimated using type II ML estimation (empirical Bayes).",
+        "An alternative approach is to directly optimize the objective using fixed-point updates or iteratively reweighted l1 algorithms.",
+        "ARD seems quite different from the MAP estimation methods we have been considering earlier in this chapter. In particular, in ARD, we are not integrating out \u03b1 and optimizing w, but vice versa."
+      ]
+    },
+    {
+      "topic": "Sparse Coding",
+      "sub_topics": [
+        "Sparse coding approximates each observed vector x\u1d62 as a sparse combination of basis vectors (columns of W), where the sparsity pattern changes from data case to data case.",
+        "The factor loading matrix W is called a dictionary, and each column is referred to as an atom; the representation is often overcomplete (L > D).",
+        "Learning a sparse coding dictionary involves maximizing the likelihood, often approximated by maximizing the log likelihood of each data point.",
+        "To prevent W from becoming arbitrarily large, it is common to constrain the l2 norm of its columns to be less than or equal to 1.",
+        "Compressed sensing uses sparse coding to recover signals from low-dimensional projections, exploiting the fact that natural signals can be expressed as a weighted combination of a small number of suitably chosen basis functions."
+      ]
+    }
+  ]
+}

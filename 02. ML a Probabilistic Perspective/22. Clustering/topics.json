@@ -1,0 +1,95 @@
+{
+  "topics": [
+    {
+      "topic": "Clustering Fundamentals",
+      "sub_topics": [
+        "Clustering is an unsupervised learning technique that groups similar objects together based on dissimilarity or feature matrices. It aims to assign similar points to the same cluster and dissimilar points to different clusters, serving as a foundational step for understanding complex data patterns.",
+        "Similarity-based clustering uses a dissimilarity matrix (or distance matrix) as input, which measures the pairwise dissimilarity between objects, allowing for the incorporation of domain-specific similarity or kernel functions. Feature-based clustering, on the other hand, uses a feature matrix as input, where each row represents an object and each column represents a feature, enabling the application of clustering to \"raw\", potentially noisy data.",
+        "Dissimilarity between objects can be measured using various distance metrics. Common attribute dissimilarity functions include Squared Euclidean distance (\\u2206j(xij, xi'j) = (xij - xi'j)^2), which is suitable for real-valued attributes but emphasizes large differences; City Block distance (l1 distance: \\u2206j(xij, xi'j) = |xij - xi'j|), which is more robust; correlation coefficient (for time-series data); or Hamming distance (for categorical variables).",
+        "For ordinal variables (e.g., low, medium, high), encoding values as real-valued numbers (e.g., 1/3, 2/3, 3/3) allows the application of dissimilarity functions for quantitative variables. Categorical variables (e.g., {red, green, blue}) are assigned a distance of 1 if features differ and 0 otherwise. Summing over categorical features yields the Hamming distance (\\u0394(xi, xi') = \\u2211j I(xij \\u2260 xi'j)), quantifying the number of differing attributes between objects.",
+        "The dissimilarity matrix D, where di,i = 0 and di,j \\u2265 0, quantifies the 'distance' between objects i e j. However, subjectively assessed dissimilarities often violate the triangle inequality (di,j \\u2264 di,k + dj,k), challenging their strict interpretation as distances. Similarity matrices S can be transformed into dissimilarity matrices D using monotonically decreasing functions (e.g., D = max(S) \\u2013 S).",
+        "Flat clustering (or partitional clustering) divides objects into disjoint sets, whereas hierarchical clustering creates a nested tree of partitions, offering different trade-offs between speed and usefulness. Flat clustering is faster, with a time complexity of O(ND), while hierarchical clustering is often more useful but slower, with a time complexity of O(N\\u00b2 log N). The choice between probabilistic and non-probabilistic methods impacts the approach to clustering, with probabilistic models allowing evaluation of likelihood but non-probabilistic methods often containing useful ideas for speeding up inference."
+      ]
+    },
+    {
+      "topic": "Evaluating Clustering Output",
+      "sub_topics": [
+        "Evaluating clustering quality is challenging due to its unsupervised nature; however, probabilistic models allow likelihood evaluation, though this may not directly assess clustering or apply to non-probabilistic methods.",
+        "Purity measures the extent to which clusters contain objects from a single class. It is calculated as purity = (1/N) * \\u2211i maxj(Nij), where Nij is the number of objects in cluster i belonging to class j, and N is the total number of objects. A high purity indicates that clusters are dominated by a single class. However, it can be trivially maximized by assigning each object to its own cluster.",
+        "The Rand index quantifies the fraction of correct clustering decisions by comparing two different partitions of the data, considering true positives (TP), true negatives (TN), false positives (FP), and false negatives (FN). The Rand index is (TP + TN) / (TP + FP + FN + TN). The adjusted Rand index (AR) corrects the Rand index for chance agreement between clusterings. It is calculated as (index - expected index) / (max index - expected index), where the expected index is determined based on a hyper-geometric distribution. AR provides a more robust measure of clustering similarity.",
+        "Mutual information (MI) quantifies the amount of information shared between two clusterings, U and V. It is calculated using probabilities puv(i, j), pu(i), and pv(j) to measure the dependence between cluster assignments. I(U, V) = \\u2211i \\u2211j puv(i, j) log [puv(i, j) / (pu(i)pv(j))]. Normalized mutual information (NMI) adjusts MI to account for the entropy of the clusterings. It is calculated as NMI(U, V) = I(U, V) / sqrt[ (H(U) + H(V))/2 ], where H(U) and H(V) are the entropies of clusterings U and V. NMI provides a standardized measure of shared information, suitable for comparing clusterings with different numbers of clusters.",
+        "The F-score, a common statistic for binary decision problems, can be used to evaluate the performance of clustering, weighting false positives and false negatives differently, and its statistical significance can be estimated via bootstrapping."
+      ]
+    },
+    {
+      "topic": "Dirichlet Process Mixture Models (DPMMs)",
+      "sub_topics": [
+        "Dirichlet Process Mixture Models (DPMMs) are non-parametric Bayesian models used for clustering, which addresses the problem of choosing the number of components K in finite mixture models by not imposing any a priori bound on K, allowing the number of clusters to grow as the amount of data increases. DPMMs use a non-parametric prior based on the Dirichlet process (DP), which is a distribution over probability measures, allowing the number of clusters to grow as the amount of data increases, proving useful for hierarchical clustering.",
+        "DPMMs involve a finite mixture model representation, where data points are generated from cluster-specific distributions with mixing weights, and a non-parametric prior governs the distribution over these weights. Finite mixture models define a probabilistic model of the data and optimize a well-defined objective (the likelihood or posterior). The number of components K is a key parameter, but choosing the correct K can be challenging and subjective, potentially leading to suboptimal clustering.",
+        "The Dirichlet process (DP) is defined implicitly by the requirement that for any finite partition of the data, the joint distribution of the probability measures assigned to each partition follows a Dirichlet distribution, with parameters determined by a concentration parameter and a base measure. The Dirichlet process is a distribution over probability measures G: \\u0398 \\u2192 R+, defined implicitly by the requirement that (G(T1), ..., G(TK)) has a joint Dirichlet distribution Dir(\\u03b1H(T1), ..., \\u03b1H(TK)) for any finite partition (T1, ..., Tk) of \\u0398. It is characterized by a concentration parameter \\u03b1 and a base measure H.",
+        "The stick-breaking construction provides a constructive definition for the DP, where an infinite sequence of mixture weights is derived by recursively breaking off pieces of a unit length stick, generating a variable number of clusters. The stick-breaking construction provides a constructive definition for the DP. It involves creating an infinite sequence of mixture weights \\u03c0 = {\\u03c0k}k=1 from a process where \\u03b2k ~ Beta(1, \\u03b1) and \\u03c0k = \\u03b2k * \\u03a0(1 - \\u03b2l) for l=1 to k-1. This process generates discrete distributions suitable for mixture modeling.",
+        "The Chinese restaurant process (CRP) provides an analogy for understanding DPMMs, where tables represent clusters and customers represent data points, with the probability of joining a table proportional to the number of occupants. The Chinese restaurant process (CRP) provides a clustering property to draw samples form a GP. If \\u03b8i ~ G are N observations from G ~ DP(\\u03b1, H), taking on K distinct values \\u03b8k, then the predictive distribution of the next observation is given by p(\\u03b8N+1 = \\u03b8|\\u03b81:N, \\u03b1, H) = (\\u03b1/(\\u03b1 + N))*H(\\u03b8) + \\u2211(Nk/(\\u03b1 + N))*\\u03b4\\u03b8k(\\u03b8).",
+        "Applying Dirichlet processes to mixture modeling involves defining G ~ DP(\\u03b1, H) and expressing the model as \\u03c0 ~ GEM(\\u03b1), zi ~ \\u03c0, \\u03b8k ~ H(\\u03bb), and xi ~ F(\\u03b8zi); G is a random draw of unbounded parameters \\u03b8k from the base distribution H, each with weight \\u03c0k.",
+        "The simplest way to fit a DP mixture model is to modify the collapsed Gibbs sampler. The conditional probability p(zi = k|z\\u2212i, x, \\u03b1, \\u03bb) is proportional to p(zi = k|z\\u2212i, \\u03b1) * p(xi|x\\u2212i, zi = k, z\\u2212i, \\u03bb), where the first term is determined by the CRP and the second term involves partitioning the data into clusters."
+      ]
+    },
+    {
+      "topic": "Affinity Propagation",
+      "sub_topics": [
+        "Affinity propagation is a clustering technique that takes a similarity matrix as input and identifies exemplars, which serve as cluster centers, offering an alternative to K-medoids or K-centers algorithms, without requiring the specification of the number of clusters.",
+        "Each data point chooses another data point as its exemplar, with some data points choosing themselves, automatically determining the number of clusters based on the data's intrinsic structure.",
+        "The algorithm maximizes a function that balances the similarity of each point to its centroid and a penalty term ensuring exemplars choose themselves, achieved through message passing.",
+        "Messages exchanged between data points include 'responsibility,' measuring how well a point serves as an exemplar, and 'availability,' indicating the confidence in a point being an exemplar.",
+        "The objective function to maximize is S(c) = sum(s(i, ci)) + sum(\\u03b4k(c)), where the first term measures the similarity of each point to its centroid, and the second term is a penalty term that is -\\u221e if some data point i has chosen k as its exemplar but k has not chosen itself.",
+        "Max-product loopy belief propagation is used to find a strong local maximum of the objective, where variable nodes ci send a scalar message ri\\u2192k (responsibility) to factor nodes \\u03b4k, and factor nodes \\u03b4k send a scalar message ak\\u2190i (availability) to variable nodes ci.",
+        "Affinity propagation is reliable in practice with the use of damping. The number of clusters can be controlled by scaling the diagonal terms of the similarity matrix."
+      ]
+    },
+    {
+      "topic": "Spectral Clustering",
+      "sub_topics": [
+        "Spectral clustering views clustering as a graph cut problem, creating a weighted undirected graph from a similarity matrix and partitioning it into K clusters by minimizing the cut between clusters.",
+        "The normalized cut criterion ensures reasonably large clusters by dividing the cut by the volume of the clusters, balancing intra-cluster similarity and inter-cluster dissimilarity.",
+        "Spectral clustering uses graph cuts on a weighted undirected graph W derived from the similarity matrix S to partition data into K clusters, minimizing cut(A1,..., AK) = (1/2) * sum(W(Ak, Ak)), where W(A, B) is the sum of weights between sets A and B.",
+        "The normalized cut (Ncut) is defined as Ncut(A1,..., AK) = sum(cut(Ak, Ak) / vol(Ak)), where vol(A) is the sum of degrees of nodes in A, and di is the weighted degree of node i; this splits the graph into K clusters such that nodes within each cluster are similar, but different from nodes in other clusters.",
+        "The graph Laplacian is defined as L = D - W, where W is a symmetric weight matrix and D is a diagonal matrix containing the weighted degree of each node; L has various properties, including having 1 as an eigenvector with eigenvalue 0, and being symmetric and positive semi-definite.",
+        "The set of eigenvectors of L with eigenvalue 0 is spanned by the indicator vectors 1A1, ..., 1AK, where Ak are the K connected components of the graph. This theorem provides a theoretical basis for using the eigenvectors of the Laplacian for identifying cluster structure.",
+        "In practice, it is important to normalize the graph Laplacian to account for varying node connectivity. Two common methods are the random walk Laplacian (Lrw = D^(-1)L = I - D^(-1)W) and the symmetric Laplacian (Lsym = D^(-1/2)LD^(-1/2) = I - D^(-1/2)WD^(-1/2)). These normalized Laplacians provide improved performance in spectral clustering algorithms."
+      ]
+    },
+    {
+      "topic": "Hierarchical Clustering",
+      "sub_topics": [
+        "Hierarchical clustering produces a nested hierarchy of clusters, using either a bottom-up (agglomerative) or top-down (divisive) approach, and takes as input a dissimilarity matrix between objects.",
+        "Agglomerative clustering starts with N groups, each initially containing one object, and then at each step it merges the two most similar groups until there is a single group, containing all the data. The merging process is represented by a binary tree called a dendrogram.",
+        "Variants of agglomerative clustering include single link clustering, complete link clustering, and average link clustering, which differ in how they define the dissimilarity between groups of objects.",
+        "Single link clustering (nearest neighbor) defines the distance between two groups as the distance between the two closest members; it builds a minimum spanning tree of the data.",
+        "Complete link clustering (furthest neighbor) defines the distance between two groups as the distance between the two most distant pairs.",
+        "Average link clustering measures the average distance between all pairs and represents a compromise between single and complete link clustering.",
+        "Divisive clustering starts with all data in a single cluster, recursively dividing each cluster into two daughter clusters; this can be done using the bisecting K-means algorithm or by building a minimum spanning tree and breaking the link corresponding to the largest dissimilarity.",
+        "Bayesian hierarchical clustering (BHC) uses Bayesian hypothesis tests to decide which clusters to merge, where the probability of a merge is given by p(Dij|Tij) = p(Dij|Mij = 1)p(Mij = 1) / (p(Dij|Mij = 1)p(Mij = 1) + p(Dij|Mij = 0)p(Mij = 0)); this is algorithmically similar to standard bottom-up agglomerative clustering, but uses Bayesian hypothesis tests instead of ad-hoc similarity metrics."
+      ]
+    },
+    {
+      "topic": "Bayesian Hierarchical Clustering (BHC)",
+      "sub_topics": [
+        "Bayesian hierarchical clustering (BHC) uses Bayesian hypothesis tests to decide which clusters to merge, offering a probabilistic approach to hierarchical clustering based on a data matrix.",
+        "The algorithm compares two trees to see if they should be merged, defining the probability of a merge based on the data and prior probabilities.",
+        "BHC computes the marginal likelihood of a Dirichlet process mixture model, summing over partitions consistent with the tree, providing a lower bound on the marginal likelihood of the data.",
+        "The algorithm computes the probability of each node coming from the DPMM, initializing values for leaves and building the tree, then cutting at points where the merge probability is below a threshold."
+      ]
+    },
+    {
+      "topic": "Biclustering and Multi-view Clustering",
+      "sub_topics": [
+        "Biclustering or coclustering clusters rows and columns simultaneously, widely used in bioinformatics to represent genes and conditions, or in collaborative filtering to represent users and movies.",
+        "Biclustering (co-clustering) clusters both rows and columns of a data matrix. It is widely used in bioinformatics, where rows represent genes and columns represent conditions, and in collaborative filtering, where rows represent users and columns represent movies.",
+        "The technique involves associating each row and column with a latent indicator and assuming data are iid across samples and features within each block, fitting the model using Gibbs sampling.",
+        "A simple probabilistic generative model for biclustering associates each row and column with a latent indicator, ri \\u2208 {1, ..., K\\u02dc} and cj \\u2208 {1, ..., K\\u00b0}, respectively. The data are assumed iid across samples and features within each block: p(x|r, c, \\u03b8) = \\u03a0i \\u03a0j p(xij|ri, cj, \\u03b8).",
+        "Multi-view clustering assigns objects to different clusters depending on the subset of features used, modeling the phenomenon where objects can have multiple roles.",
+        "Multi-view clustering allows an object (row) to belong to multiple clusters, depending on the subset of features used; a Dirichlet process prior can be used for p(c), allowing the number of views V to grow automatically.",
+        "Multi-view clustering partitions the columns (features) into V groups or views, where cj \\u2208 {1, ..., V} for j \\u2208 {1, ..., D}. For each view v, the rows are partitioned using a DP. The model is defined as p(c, r, D) = p(c)p(r|c)p(D|r, c), where p(c) is a DP, p(r|c) is a product of DPs, and p(D|r, c) is a product of likelihoods within each block."
+      ]
+    }
+  ]
+}
